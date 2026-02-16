@@ -1,0 +1,7 @@
+# Require review from repository owner by default
+* @malayakondagiridhar
+
+# Backend critical paths
+/backend/src/ @malayakondagiridhar
+/backend/tests/ @malayakondagiridhar
+/.github/workflows/ @malayakondagiridhar
