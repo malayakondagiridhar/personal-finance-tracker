@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Application.Abstractions.Services;
 using PersonalFinanceTracker.Application.Contracts.Budgets;
+using PersonalFinanceTracker.Application.Exceptions;
 using PersonalFinanceTracker.Domain.Entities;
 using PersonalFinanceTracker.Domain.Enums;
 using PersonalFinanceTracker.Infrastructure.Persistence;
@@ -25,7 +26,7 @@ public sealed class BudgetService(AppDbContext dbContext) : IBudgetService
 
         if (existingBudget)
         {
-            throw new InvalidOperationException("Budget already exists for this category and month.");
+            throw new ConflictException("Budget already exists for this category and month.");
         }
 
         var budget = new Budget
@@ -116,7 +117,7 @@ public sealed class BudgetService(AppDbContext dbContext) : IBudgetService
 
         if (!categoryExists)
         {
-            throw new InvalidOperationException("Category was not found for this user.");
+            throw new NotFoundException("Category was not found for this user.");
         }
     }
 
@@ -124,12 +125,12 @@ public sealed class BudgetService(AppDbContext dbContext) : IBudgetService
     {
         if (year is < 2000 or > 2100)
         {
-            throw new ArgumentException("year must be between 2000 and 2100.");
+            throw new ValidationException("year must be between 2000 and 2100.");
         }
 
         if (month is < 1 or > 12)
         {
-            throw new ArgumentException("month must be between 1 and 12.");
+            throw new ValidationException("month must be between 1 and 12.");
         }
     }
 }

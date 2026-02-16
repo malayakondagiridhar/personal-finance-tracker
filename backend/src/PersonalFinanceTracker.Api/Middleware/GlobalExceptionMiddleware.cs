@@ -1,5 +1,5 @@
-using System.Net;
 using System.Text.Json;
+using PersonalFinanceTracker.Application.Exceptions;
 
 namespace PersonalFinanceTracker.Api.Middleware;
 
@@ -44,9 +44,11 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
     {
         return exception switch
         {
+            UnauthorizedException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
-            KeyNotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
-            InvalidOperationException => (StatusCodes.Status409Conflict, "Business rule conflict"),
+            NotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
+            ConflictException => (StatusCodes.Status409Conflict, "Business rule conflict"),
+            ValidationException => (StatusCodes.Status400BadRequest, "Invalid request"),
             ArgumentException => (StatusCodes.Status400BadRequest, "Invalid request"),
             _ => (StatusCodes.Status500InternalServerError, "Unexpected server error")
         };

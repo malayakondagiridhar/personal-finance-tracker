@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Application.Abstractions.Services;
 using PersonalFinanceTracker.Application.Contracts.Categories;
+using PersonalFinanceTracker.Application.Exceptions;
 using PersonalFinanceTracker.Domain.Entities;
 using PersonalFinanceTracker.Infrastructure.Persistence;
 
@@ -20,7 +21,7 @@ public sealed class CategoryService(AppDbContext dbContext) : ICategoryService
 
         if (nameExists)
         {
-            throw new InvalidOperationException("Category with the same name already exists for this user.");
+            throw new ConflictException("Category with the same name already exists for this user.");
         }
 
         var category = new Category

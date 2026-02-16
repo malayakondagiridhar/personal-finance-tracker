@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Application.Abstractions.Services;
 using PersonalFinanceTracker.Application.Contracts.Transactions;
+using PersonalFinanceTracker.Application.Exceptions;
 using PersonalFinanceTracker.Domain.Entities;
 using PersonalFinanceTracker.Infrastructure.Persistence;
 
@@ -34,7 +35,7 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
     {
         if (query.FromDateUtc.HasValue && query.ToDateUtc.HasValue && query.FromDateUtc > query.ToDateUtc)
         {
-            throw new ArgumentException("fromDateUtc cannot be greater than toDateUtc.");
+            throw new ValidationException("fromDateUtc cannot be greater than toDateUtc.");
         }
 
         var dataQuery = dbContext.Transactions
@@ -71,7 +72,7 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
     {
         var transaction = await dbContext.Transactions
             .FirstOrDefaultAsync(x => x.Id == transactionId, cancellationToken)
-            ?? throw new KeyNotFoundException($"Transaction '{transactionId}' was not found.");
+            ?? throw new NotFoundException($"Transaction '{transactionId}' was not found.");
 
         await EnsureCategoryBelongsToUserAsync(request.CategoryId, transaction.UserId, cancellationToken);
 
@@ -91,7 +92,7 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
     {
         var transaction = await dbContext.Transactions
             .FirstOrDefaultAsync(x => x.Id == transactionId, cancellationToken)
-            ?? throw new KeyNotFoundException($"Transaction '{transactionId}' was not found.");
+            ?? throw new NotFoundException($"Transaction '{transactionId}' was not found.");
 
         dbContext.Transactions.Remove(transaction);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -105,7 +106,7 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
 
         if (!categoryExists)
         {
-            throw new InvalidOperationException("Category was not found for this user.");
+            throw new NotFoundException("Category was not found for this user.");
         }
     }
 
