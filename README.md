@@ -1,73 +1,91 @@
-# React + TypeScript + Vite
+# Personal Finance Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A practical finance app to track income/expenses, monitor monthly spending, and build better money habits.
 
-Currently, two official plugins are available:
+This project is being evolved into a **portfolio-quality full-stack app** with a React frontend and planned **.NET + SQL backend**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Why this project
 
-## React Compiler
+Most finance demos stop at UI. This project is focused on real-world engineering skills:
+- clean domain modeling for transactions and budgets
+- reliable data flow and validation
+- reporting/summaries that are useful for decisions
+- production-style project hygiene (docs, issue templates, CI roadmap)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Current status
 
-## Expanding the ESLint configuration
+- Frontend scaffold is available (React + TypeScript + Vite)
+- Core product direction defined
+- Phase 1 documentation and repo hygiene complete
+- Backend APIs and SQL schema are next (Phase 2)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Planned features
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Transaction tracking (income/expense)
+- Category management
+- Monthly summaries and trends
+- Budget targets and over-budget alerts
+- Dashboard insights for spending patterns
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Tech stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Current
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS
+
+### Planned backend expansion
+- ASP.NET Core Web API
+- Entity Framework Core
+- SQL Server or PostgreSQL
+- JWT-based authentication
+
+## Project structure
+
+```text
+personal-finance-tracker/
+├─ src/                  # React frontend
+├─ public/               # Static assets
+├─ .github/              # Issue templates and repo workflows (growing)
+├─ README.md
+├─ CONTRIBUTING.md
+└─ LICENSE
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Local setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
+
+Build for production:
+
+```bash
+npm run build
+npm run preview
+```
+
+## Roadmap
+
+- [x] Phase 1: Documentation + repo hygiene
+- [ ] Phase 2: .NET API scaffold + SQL schema + migrations
+- [ ] Phase 3: Transactions + summaries endpoints
+- [ ] Phase 4: Tests + CI quality gates
+- [ ] Phase 5: Release v1.0.0 with portfolio case study
+
+## Screenshots / Demo
+
+- Demo URL: _coming soon_
+- UI screenshots: _coming soon_
+
+## Learning goals
+
+- Build backend depth in **.NET and SQL**
+- Practice clean architecture and API design
+- Produce recruiter-friendly project evidence (docs, commits, releases)
+
+---
+
+If you want to contribute, see [CONTRIBUTING.md](./CONTRIBUTING.md).
