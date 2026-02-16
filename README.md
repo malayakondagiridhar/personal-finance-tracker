@@ -2,7 +2,7 @@
 
 A practical finance app to track income/expenses, monitor monthly spending, and build better money habits.
 
-This project is being evolved into a **portfolio-quality full-stack app** with a React frontend and planned **.NET + SQL backend**.
+This project is being evolved into a **portfolio-quality full-stack app** with a React frontend and an implemented **ASP.NET Core + SQL Server backend foundation**.
 
 ## Why this project
 
@@ -10,44 +10,49 @@ Most finance demos stop at UI. This project is focused on real-world engineering
 - clean domain modeling for transactions and budgets
 - reliable data flow and validation
 - reporting/summaries that are useful for decisions
-- production-style project hygiene (docs, issue templates, CI roadmap)
+- production-style project hygiene (docs, issue templates, PR templates, clean commit history)
 
 ## Current status
 
 - Frontend scaffold is available (React + TypeScript + Vite)
-- Core product direction defined
-- Phase 1 documentation and repo hygiene complete
-- Backend APIs and SQL schema are next (Phase 2)
-
-## Planned features
-
-- Transaction tracking (income/expense)
-- Category management
-- Monthly summaries and trends
-- Budget targets and over-budget alerts
-- Dashboard insights for spending patterns
+- Backend foundation is implemented:
+  - layered backend solution (API/Application/Domain/Infrastructure)
+  - EF Core + SQL Server DbContext and initial migration
+  - core domain entities and mappings
+  - service contracts + service implementations (Category, Transaction, Budget, Summary)
+  - API controller skeletons
+  - global exception middleware + validation baseline
 
 ## Tech stack
 
-### Current
+### Frontend
 - React 19
 - TypeScript
 - Vite
 - Tailwind CSS
 
-### Planned backend expansion
-- ASP.NET Core Web API
+### Backend
+- ASP.NET Core Web API (.NET 10)
 - Entity Framework Core
-- SQL Server or PostgreSQL
-- JWT-based authentication
+- SQL Server
+- FluentValidation
 
 ## Project structure
 
 ```text
 personal-finance-tracker/
-├─ src/                  # React frontend
-├─ public/               # Static assets
-├─ .github/              # Issue templates and repo workflows (growing)
+├─ src/                                  # React frontend
+├─ backend/
+│  ├─ PersonalFinanceTracker.slnx
+│  ├─ src/
+│  │  ├─ PersonalFinanceTracker.Api
+│  │  ├─ PersonalFinanceTracker.Application
+│  │  ├─ PersonalFinanceTracker.Domain
+│  │  └─ PersonalFinanceTracker.Infrastructure
+│  └─ tests/
+│     ├─ PersonalFinanceTracker.UnitTests
+│     └─ PersonalFinanceTracker.IntegrationTests
+├─ .github/
 ├─ README.md
 ├─ CONTRIBUTING.md
 └─ LICENSE
@@ -55,34 +60,96 @@ personal-finance-tracker/
 
 ## Local setup
 
+### Frontend
 ```bash
 npm install
 npm run dev
 ```
 
-Build for production:
+### Backend
+From repository root:
 
 ```bash
-npm run build
-npm run preview
+dotnet build backend/PersonalFinanceTracker.slnx
+```
+
+Apply database migration:
+
+```bash
+dotnet ef database update \
+  --project backend/src/PersonalFinanceTracker.Infrastructure/PersonalFinanceTracker.Infrastructure.csproj \
+  --startup-project backend/src/PersonalFinanceTracker.Api/PersonalFinanceTracker.Api.csproj
+```
+
+Run API:
+
+```bash
+dotnet run --project backend/src/PersonalFinanceTracker.Api/PersonalFinanceTracker.Api.csproj
+```
+
+## API endpoints (current)
+
+- `POST /api/categories`
+- `GET /api/categories?userId={userId}`
+- `POST /api/transactions`
+- `GET /api/transactions?userId={userId}&fromDateUtc=&toDateUtc=&categoryId=&type=`
+- `PUT /api/transactions/{transactionId}`
+- `DELETE /api/transactions/{transactionId}`
+- `POST /api/budgets`
+- `GET /api/budgets/status?userId={userId}&year={year}&month={month}`
+- `GET /api/summary/monthly?userId={userId}&year={year}&month={month}`
+
+## Sample requests
+
+Create category:
+
+```http
+POST /api/categories
+Content-Type: application/json
+
+{
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "name": "Food",
+  "description": "Groceries and dining",
+  "isDefault": false
+}
+```
+
+Create transaction:
+
+```http
+POST /api/transactions
+Content-Type: application/json
+
+{
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "categoryId": "00000000-0000-0000-0000-000000000010",
+  "amount": 950.50,
+  "type": 2,
+  "transactionDateUtc": "2026-02-16T08:30:00Z",
+  "note": "Weekly groceries"
+}
 ```
 
 ## Roadmap
 
 - [x] Phase 1: Documentation + repo hygiene
-- [ ] Phase 2: .NET API scaffold + SQL schema + migrations
-- [ ] Phase 3: Transactions + summaries endpoints
-- [ ] Phase 4: Tests + CI quality gates
+- [x] Phase 2: .NET API scaffold + SQL schema + migrations + core services
+- [ ] Phase 3: production-grade endpoint behavior + richer validations + integration tests
+- [ ] Phase 4: CI quality gates + test coverage expansion
 - [ ] Phase 5: Release v1.0.0 with portfolio case study
 
-## Screenshots / Demo
+## Phase 2 completion checklist
 
-- Demo URL: _coming soon_
-- UI screenshots: _coming soon_
+- [x] Clean architecture skeleton in place
+- [x] SQL Server migration baseline committed
+- [x] Category/Transaction/Budget/Summary services implemented
+- [x] Validation baseline and global exception middleware added
+- [x] PR-driven, single-responsibility commit history maintained
 
 ## Learning goals
 
-- Build backend depth in **.NET and SQL**
+- Build backend depth in **.NET and SQL Server**
 - Practice clean architecture and API design
 - Produce recruiter-friendly project evidence (docs, commits, releases)
 
