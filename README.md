@@ -144,7 +144,7 @@ Content-Type: application/json
 - [x] Phase 1: Documentation + repo hygiene
 - [x] Phase 2: .NET API scaffold + SQL schema + migrations + core services
 - [x] Phase 3: production-grade endpoint behavior + richer validations + integration tests
-- [ ] Phase 4: CI quality gates + test coverage expansion
+- [x] Phase 4: CI quality gates + test coverage expansion
 - [ ] Phase 5: Release v1.0.0 with portfolio case study
 
 ## CI quality gates
@@ -170,6 +170,13 @@ GitHub Actions CI runs on push/PR to `main` and validates:
 - [x] Integration coverage for Categories + Transactions flows
 - [x] Integration coverage for Budgets + Summary flows
 - [x] All Phase 3 PRs completed from dedicated phase branch
+
+## Phase 4 completion checklist
+
+- [x] GitHub Actions CI pipeline added for frontend/backend build + tests
+- [x] Unit test baseline expanded for core service guard behavior
+- [x] API error-contract integration coverage added (400/404/409 payload checks)
+- [x] Branch protection enabled on `main` with required status check: `build-and-test`
 
 ## Learning goals
 
