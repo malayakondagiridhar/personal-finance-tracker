@@ -147,6 +147,14 @@ Content-Type: application/json
 - [ ] Phase 4: CI quality gates + test coverage expansion
 - [ ] Phase 5: Release v1.0.0 with portfolio case study
 
+## CI quality gates
+
+GitHub Actions CI runs on push/PR to `main` and validates:
+- frontend install + build
+- backend restore + build
+- unit tests
+- integration tests
+
 ## Phase 2 completion checklist
 
 - [x] Clean architecture skeleton in place
