@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PersonalFinanceTracker.Api/PersonalFinanceTracker.Api.csproj" />
+    <Project Path="src/PersonalFinanceTracker.Application/PersonalFinanceTracker.Application.csproj" />
+    <Project Path="src/PersonalFinanceTracker.Domain/PersonalFinanceTracker.Domain.csproj" />
+    <Project Path="src/PersonalFinanceTracker.Infrastructure/PersonalFinanceTracker.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PersonalFinanceTracker.IntegrationTests/PersonalFinanceTracker.IntegrationTests.csproj" />
+    <Project Path="tests/PersonalFinanceTracker.UnitTests/PersonalFinanceTracker.UnitTests.csproj" />
+  </Folder>
+</Solution>
