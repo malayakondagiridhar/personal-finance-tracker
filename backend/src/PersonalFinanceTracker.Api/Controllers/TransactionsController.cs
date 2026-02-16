@@ -1,0 +1,50 @@
+using Microsoft.AspNetCore.Mvc;
+using PersonalFinanceTracker.Application.Abstractions.Services;
+using PersonalFinanceTracker.Application.Contracts.Transactions;
+using PersonalFinanceTracker.Domain.Enums;
+
+namespace PersonalFinanceTracker.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public sealed class TransactionsController(ITransactionService transactionService) : ControllerBase
+{
+    [HttpPost]
+    [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status201Created)]
+    public async Task<IActionResult> Create([FromBody] CreateTransactionRequest request, CancellationToken cancellationToken)
+    {
+        var created = await transactionService.CreateAsync(request, cancellationToken);
+        return CreatedAtAction(nameof(Get), new { userId = created.UserId }, created);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<TransactionDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Get(
+        [FromQuery] Guid userId,
+        [FromQuery] DateTime? fromDateUtc,
+        [FromQuery] DateTime? toDateUtc,
+        [FromQuery] Guid? categoryId,
+        [FromQuery] TransactionType? type,
+        CancellationToken cancellationToken)
+    {
+        var query = new TransactionQuery(userId, fromDateUtc, toDateUtc, categoryId, type);
+        var data = await transactionService.GetAsync(query, cancellationToken);
+        return Ok(data);
+    }
+
+    [HttpPut("{transactionId:guid}")]
+    [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Update(Guid transactionId, [FromBody] UpdateTransactionRequest request, CancellationToken cancellationToken)
+    {
+        var updated = await transactionService.UpdateAsync(transactionId, request, cancellationToken);
+        return Ok(updated);
+    }
+
+    [HttpDelete("{transactionId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Delete(Guid transactionId, CancellationToken cancellationToken)
+    {
+        await transactionService.DeleteAsync(transactionId, cancellationToken);
+        return NoContent();
+    }
+}
