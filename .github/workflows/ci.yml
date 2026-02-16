@@ -26,7 +26,10 @@ jobs:
           cache: 'npm'
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci --include=optional
+
+      - name: Ensure Rollup optional dependency (Linux)
+        run: npm install --no-save @rollup/rollup-linux-x64-gnu
 
       - name: Build frontend
         run: npm run build
