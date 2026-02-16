@@ -22,6 +22,8 @@ Most finance demos stop at UI. This project is focused on real-world engineering
   - service contracts + service implementations (Category, Transaction, Budget, Summary)
   - API controller skeletons
   - global exception middleware + validation baseline
+  - exception-to-HTTP mapping (400/404/409/500)
+  - integration tests for categories, transactions, budgets, and summary
 
 ## Tech stack
 
@@ -87,6 +89,12 @@ Run API:
 dotnet run --project backend/src/PersonalFinanceTracker.Api/PersonalFinanceTracker.Api.csproj
 ```
 
+Run integration tests:
+
+```bash
+dotnet test backend/tests/PersonalFinanceTracker.IntegrationTests/PersonalFinanceTracker.IntegrationTests.csproj
+```
+
 ## API endpoints (current)
 
 - `POST /api/categories`
@@ -135,7 +143,7 @@ Content-Type: application/json
 
 - [x] Phase 1: Documentation + repo hygiene
 - [x] Phase 2: .NET API scaffold + SQL schema + migrations + core services
-- [ ] Phase 3: production-grade endpoint behavior + richer validations + integration tests
+- [x] Phase 3: production-grade endpoint behavior + richer validations + integration tests
 - [ ] Phase 4: CI quality gates + test coverage expansion
 - [ ] Phase 5: Release v1.0.0 with portfolio case study
 
@@ -146,6 +154,14 @@ Content-Type: application/json
 - [x] Category/Transaction/Budget/Summary services implemented
 - [x] Validation baseline and global exception middleware added
 - [x] PR-driven, single-responsibility commit history maintained
+
+## Phase 3 completion checklist
+
+- [x] Exception mapping aligned to API semantics (400/404/409/500)
+- [x] Service hardening for conflict and invalid-range guardrails
+- [x] Integration coverage for Categories + Transactions flows
+- [x] Integration coverage for Budgets + Summary flows
+- [x] All Phase 3 PRs completed from dedicated phase branch
 
 ## Learning goals
 
