@@ -27,7 +27,7 @@ public sealed class SummaryService(AppDbContext dbContext) : ISummaryService
             .Where(x => x.Type == TransactionType.Expense)
             .SumAsync(x => (decimal?)x.Amount, cancellationToken) ?? 0m;
 
-        var categoryBreakdown = await transactions
+        var categoryBreakdownRaw = await transactions
             .Where(x => x.Type == TransactionType.Expense)
             .Join(
                 dbContext.Categories.AsNoTracking(),
@@ -40,12 +40,18 @@ public sealed class SummaryService(AppDbContext dbContext) : ISummaryService
                     transaction.Amount
                 })
             .GroupBy(x => new { x.Id, x.Name })
-            .Select(group => new CategorySpendDto(
+            .Select(group => new
+            {
                 group.Key.Id,
                 group.Key.Name,
-                group.Sum(x => x.Amount)))
+                Amount = group.Sum(x => x.Amount)
+            })
             .OrderByDescending(x => x.Amount)
             .ToListAsync(cancellationToken);
+
+        var categoryBreakdown = categoryBreakdownRaw
+            .Select(x => new CategorySpendDto(x.Id, x.Name, x.Amount))
+            .ToList();
 
         return new MonthlySummaryDto(
             userId,
