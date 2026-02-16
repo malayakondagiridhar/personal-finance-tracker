@@ -12,8 +12,8 @@ using PersonalFinanceTracker.Infrastructure.Persistence;
 namespace PersonalFinanceTracker.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260216152440_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260216153959_InitialFinanceSchema")]
+    partial class InitialFinanceSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
