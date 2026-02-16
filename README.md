@@ -1,5 +1,7 @@
 # Personal Finance Tracker
 
+![CI](https://github.com/malayakondagiridhar/personal-finance-tracker/actions/workflows/ci.yml/badge.svg)
+
 A practical finance app to track income/expenses, monitor monthly spending, and build better money habits.
 
 This project is being evolved into a **portfolio-quality full-stack app** with a React frontend and an implemented **ASP.NET Core + SQL Server backend foundation**.
@@ -95,6 +97,29 @@ Run integration tests:
 dotnet test backend/tests/PersonalFinanceTracker.IntegrationTests/PersonalFinanceTracker.IntegrationTests.csproj
 ```
 
+## Architecture (backend)
+
+```text
+Controllers (API)
+    -> Application service contracts
+        -> Infrastructure service implementations
+            -> EF Core DbContext
+                -> SQL Server
+```
+
+Layer intent:
+- `Api`: routing, validation, middleware, HTTP contracts
+- `Application`: service interfaces + DTO contracts
+- `Domain`: entities/enums and business vocabulary
+- `Infrastructure`: EF persistence + service implementations
+
+## Engineering decisions (high-level)
+
+- Chose layered architecture over monolith-style controllers to keep responsibilities clear.
+- Used EF Core + migrations for schema versioning and repeatable database setup.
+- Added global exception mapping to keep API semantics predictable (`400/404/409/500`).
+- Added CI quality gates and integration tests early to prevent regressions.
+
 ## API endpoints (current)
 
 - `POST /api/categories`
@@ -177,6 +202,28 @@ GitHub Actions CI runs on push/PR to `main` and validates:
 - [x] Unit test baseline expanded for core service guard behavior
 - [x] API error-contract integration coverage added (400/404/409 payload checks)
 - [x] Branch protection enabled on `main` with required status check: `build-and-test`
+
+## Release artifacts
+
+- [Changelog](./CHANGELOG.md)
+- [v1.0.0 release notes](./docs/RELEASE_NOTES_v1.0.0.md)
+
+## What I built (Phase 1–4)
+
+- Portfolio-structured repository with disciplined PR/commit workflow
+- ASP.NET Core Web API with layered architecture and EF Core persistence
+- SQL schema/migrations for users, categories, transactions, and budgets
+- Category/Transaction/Budget/Summary service implementations
+- Validation + error contract consistency
+- CI workflow enforcing frontend/backend build + test quality gates
+- Unit and integration test coverage for key business and API paths
+
+## What I learned
+
+- How to structure backend work into small, reviewable, single-purpose PRs
+- How to design API behavior with reliable status-code semantics
+- How to combine unit tests + integration tests for confidence and speed
+- How to set up CI and branch protection to enforce quality automatically
 
 ## Learning goals
 
