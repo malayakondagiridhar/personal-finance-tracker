@@ -44,6 +44,7 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
     {
         return exception switch
         {
+            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
             InvalidOperationException => (StatusCodes.Status409Conflict, "Business rule conflict"),
             ArgumentException => (StatusCodes.Status400BadRequest, "Invalid request"),
