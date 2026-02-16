@@ -8,51 +8,46 @@ namespace PersonalFinanceTracker.IntegrationTests;
 
 public sealed class CategoriesApiTests : IClassFixture<PersonalFinanceApiFactory>
 {
-    private readonly HttpClient _client;
     private readonly PersonalFinanceApiFactory _factory;
 
     public CategoriesApiTests(PersonalFinanceApiFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
-        {
-            BaseAddress = new Uri("https://localhost"),
-            AllowAutoRedirect = false
-        });
     }
 
     [Fact]
     public async Task Create_Then_GetAll_ShouldReturnCreatedCategory()
     {
         var userId = Guid.NewGuid();
-        await TestDataSeeder.SeedUserAsync(_factory, userId);
+        var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var createRequest = new CreateCategoryRequest(userId, "Food", "Groceries", false);
-        var createResponse = await _client.PostAsJsonAsync("/api/categories", createRequest);
+        var createRequest = new CreateCategoryRequest(Guid.NewGuid(), "Food", "Groceries", false);
+        var createResponse = await client.PostAsJsonAsync("/api/categories", createRequest);
 
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
 
-        var listResponse = await _client.GetAsync($"/api/categories?userId={userId}");
+        var listResponse = await client.GetAsync("/api/categories");
         Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
 
         var categories = await listResponse.Content.ReadFromJsonAsync<List<CategoryDto>>();
         Assert.NotNull(categories);
         Assert.Single(categories!);
         Assert.Equal("Food", categories[0].Name);
+        Assert.Equal(userId, categories[0].UserId);
     }
 
     [Fact]
     public async Task Create_DuplicateNameForSameUser_ShouldReturnConflict()
     {
         var userId = Guid.NewGuid();
-        await TestDataSeeder.SeedUserAsync(_factory, userId);
+        var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var request = new CreateCategoryRequest(userId, "Utilities", null, false);
+        var request = new CreateCategoryRequest(Guid.NewGuid(), "Utilities", null, false);
 
-        var firstResponse = await _client.PostAsJsonAsync("/api/categories", request);
+        var firstResponse = await client.PostAsJsonAsync("/api/categories", request);
         Assert.Equal(HttpStatusCode.Created, firstResponse.StatusCode);
 
-        var secondResponse = await _client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(userId, "utilities", null, false));
+        var secondResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "utilities", null, false));
         Assert.Equal(HttpStatusCode.Conflict, secondResponse.StatusCode);
 
         var payload = await secondResponse.Content.ReadFromJsonAsync<JsonElement>();
