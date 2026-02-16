@@ -32,6 +32,11 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
 
     public async Task<IReadOnlyList<TransactionDto>> GetAsync(TransactionQuery query, CancellationToken cancellationToken = default)
     {
+        if (query.FromDateUtc.HasValue && query.ToDateUtc.HasValue && query.FromDateUtc > query.ToDateUtc)
+        {
+            throw new ArgumentException("fromDateUtc cannot be greater than toDateUtc.");
+        }
+
         var dataQuery = dbContext.Transactions
             .AsNoTracking()
             .Where(x => x.UserId == query.UserId);

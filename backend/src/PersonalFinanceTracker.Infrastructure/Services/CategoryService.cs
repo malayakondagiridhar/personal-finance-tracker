@@ -10,10 +10,23 @@ public sealed class CategoryService(AppDbContext dbContext) : ICategoryService
 {
     public async Task<CategoryDto> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
     {
+        var normalizedName = request.Name.Trim();
+
+        var nameExists = await dbContext.Categories
+            .AsNoTracking()
+            .AnyAsync(
+                x => x.UserId == request.UserId && x.Name.ToLower() == normalizedName.ToLower(),
+                cancellationToken);
+
+        if (nameExists)
+        {
+            throw new InvalidOperationException("Category with the same name already exists for this user.");
+        }
+
         var category = new Category
         {
             UserId = request.UserId,
-            Name = request.Name.Trim(),
+            Name = normalizedName,
             Description = request.Description?.Trim(),
             IsDefault = request.IsDefault,
             CreatedAtUtc = DateTime.UtcNow,

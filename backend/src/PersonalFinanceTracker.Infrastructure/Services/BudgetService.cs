@@ -11,6 +11,7 @@ public sealed class BudgetService(AppDbContext dbContext) : IBudgetService
 {
     public async Task<BudgetDto> CreateAsync(CreateBudgetRequest request, CancellationToken cancellationToken = default)
     {
+        EnsurePeriodIsValid(request.Year, request.Month);
         await EnsureCategoryBelongsToUserAsync(request.CategoryId, request.UserId, cancellationToken);
 
         var existingBudget = await dbContext.Budgets
@@ -52,6 +53,8 @@ public sealed class BudgetService(AppDbContext dbContext) : IBudgetService
 
     public async Task<IReadOnlyList<BudgetStatusDto>> GetMonthlyStatusAsync(Guid userId, int year, int month, CancellationToken cancellationToken = default)
     {
+        EnsurePeriodIsValid(year, month);
+
         var budgets = await dbContext.Budgets
             .AsNoTracking()
             .Where(x => x.UserId == userId && x.Year == year && x.Month == month)
@@ -114,6 +117,19 @@ public sealed class BudgetService(AppDbContext dbContext) : IBudgetService
         if (!categoryExists)
         {
             throw new InvalidOperationException("Category was not found for this user.");
+        }
+    }
+
+    private static void EnsurePeriodIsValid(int year, int month)
+    {
+        if (year is < 2000 or > 2100)
+        {
+            throw new ArgumentException("year must be between 2000 and 2100.");
+        }
+
+        if (month is < 1 or > 12)
+        {
+            throw new ArgumentException("month must be between 1 and 12.");
         }
     }
 }
