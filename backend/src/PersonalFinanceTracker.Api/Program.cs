@@ -91,6 +91,7 @@ app.UseGlobalExceptionHandling();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseUserProfileSync();
 app.UseAuthorization();
 
 app.MapControllers();

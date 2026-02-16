@@ -6,4 +6,9 @@ public static class MiddlewareExtensions
     {
         return app.UseMiddleware<GlobalExceptionMiddleware>();
     }
+
+    public static IApplicationBuilder UseUserProfileSync(this IApplicationBuilder app)
+    {
+        return app.UseMiddleware<UserProfileSyncMiddleware>();
+    }
 }
