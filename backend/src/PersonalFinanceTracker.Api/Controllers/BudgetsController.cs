@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonalFinanceTracker.Api.Auth;
@@ -7,8 +8,9 @@ using PersonalFinanceTracker.Application.Contracts.Budgets;
 namespace PersonalFinanceTracker.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize(Policy = "FinanceApi")]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public sealed class BudgetsController(IBudgetService budgetService) : ControllerBase
 {
     [HttpPost]

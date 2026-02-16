@@ -24,7 +24,7 @@ public sealed class BudgetsApiTests : IClassFixture<PersonalFinanceApiFactory>
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Food", "Groceries", false));
+        var categoryResponse = await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Food", "Groceries", false));
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, categoryResponse.StatusCode);
@@ -32,7 +32,7 @@ public sealed class BudgetsApiTests : IClassFixture<PersonalFinanceApiFactory>
 
         var now = DateTime.UtcNow;
         var budgetRequest = new CreateBudgetRequest(category!.Id, now.Year, now.Month, 2000m);
-        var budgetResponse = await client.PostAsJsonAsync("/api/budgets", budgetRequest);
+        var budgetResponse = await client.PostAsJsonAsync("/api/v1/budgets", budgetRequest);
 
         Assert.Equal(HttpStatusCode.Created, budgetResponse.StatusCode);
 
@@ -43,10 +43,10 @@ public sealed class BudgetsApiTests : IClassFixture<PersonalFinanceApiFactory>
             new DateTime(now.Year, now.Month, 10, 10, 0, 0, DateTimeKind.Utc),
             "Weekly groceries");
 
-        var transactionResponse = await client.PostAsJsonAsync("/api/transactions", expenseRequest);
+        var transactionResponse = await client.PostAsJsonAsync("/api/v1/transactions", expenseRequest);
         Assert.Equal(HttpStatusCode.Created, transactionResponse.StatusCode);
 
-        var statusResponse = await client.GetAsync($"/api/budgets/status?year={now.Year}&month={now.Month}");
+        var statusResponse = await client.GetAsync($"/api/v1/budgets/status?year={now.Year}&month={now.Month}");
         Assert.Equal(HttpStatusCode.OK, statusResponse.StatusCode);
 
         var statuses = await statusResponse.Content.ReadFromJsonAsync<List<BudgetStatusDto>>();
@@ -62,7 +62,7 @@ public sealed class BudgetsApiTests : IClassFixture<PersonalFinanceApiFactory>
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Rent", null, false));
+        var categoryResponse = await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Rent", null, false));
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, categoryResponse.StatusCode);
@@ -71,13 +71,14 @@ public sealed class BudgetsApiTests : IClassFixture<PersonalFinanceApiFactory>
         var now = DateTime.UtcNow;
         var request = new CreateBudgetRequest(category!.Id, now.Year, now.Month, 15000m);
 
-        var firstResponse = await client.PostAsJsonAsync("/api/budgets", request);
+        var firstResponse = await client.PostAsJsonAsync("/api/v1/budgets", request);
         Assert.Equal(HttpStatusCode.Created, firstResponse.StatusCode);
 
-        var secondResponse = await client.PostAsJsonAsync("/api/budgets", request);
+        var secondResponse = await client.PostAsJsonAsync("/api/v1/budgets", request);
         Assert.Equal(HttpStatusCode.Conflict, secondResponse.StatusCode);
 
         var payload = await secondResponse.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal(409, payload.GetProperty("status").GetInt32());
     }
 }
+

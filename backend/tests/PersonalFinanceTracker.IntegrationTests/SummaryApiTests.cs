@@ -23,10 +23,10 @@ public sealed class SummaryApiTests : IClassFixture<PersonalFinanceApiFactory>
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var foodCategoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Food", null, false));
+        var foodCategoryResponse = await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Food", null, false));
         var foodCategory = await foodCategoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
-        var salaryCategoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Salary", null, false));
+        var salaryCategoryResponse = await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Salary", null, false));
         var salaryCategory = await salaryCategoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, foodCategoryResponse.StatusCode);
@@ -36,14 +36,14 @@ public sealed class SummaryApiTests : IClassFixture<PersonalFinanceApiFactory>
 
         var now = DateTime.UtcNow;
 
-        var incomeResponse = await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest(
+        var incomeResponse = await client.PostAsJsonAsync("/api/v1/transactions", new CreateTransactionRequest(
             salaryCategory!.Id,
             5000m,
             TransactionType.Income,
             new DateTime(now.Year, now.Month, 2, 9, 0, 0, DateTimeKind.Utc),
             "Monthly salary"));
 
-        var expenseResponse = await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest(
+        var expenseResponse = await client.PostAsJsonAsync("/api/v1/transactions", new CreateTransactionRequest(
             foodCategory!.Id,
             1200m,
             TransactionType.Expense,
@@ -53,7 +53,7 @@ public sealed class SummaryApiTests : IClassFixture<PersonalFinanceApiFactory>
         Assert.Equal(HttpStatusCode.Created, incomeResponse.StatusCode);
         Assert.Equal(HttpStatusCode.Created, expenseResponse.StatusCode);
 
-        var summaryResponse = await client.GetAsync($"/api/summary/monthly?year={now.Year}&month={now.Month}");
+        var summaryResponse = await client.GetAsync($"/api/v1/summary/monthly?year={now.Year}&month={now.Month}");
         var summaryBody = await summaryResponse.Content.ReadAsStringAsync();
         Assert.True(summaryResponse.StatusCode == HttpStatusCode.OK, $"Expected 200 but got {(int)summaryResponse.StatusCode}: {summaryBody}");
 
@@ -70,3 +70,4 @@ public sealed class SummaryApiTests : IClassFixture<PersonalFinanceApiFactory>
         Assert.Equal(1200m, summary.CategoryBreakdown[0].Amount);
     }
 }
+
