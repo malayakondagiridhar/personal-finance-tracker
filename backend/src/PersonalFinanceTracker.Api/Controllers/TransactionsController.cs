@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonalFinanceTracker.Application.Abstractions.Services;
 using PersonalFinanceTracker.Application.Contracts.Transactions;
@@ -6,6 +7,7 @@ using PersonalFinanceTracker.Domain.Enums;
 namespace PersonalFinanceTracker.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = "FinanceApi")]
 [Route("api/[controller]")]
 public sealed class TransactionsController(ITransactionService transactionService) : ControllerBase
 {

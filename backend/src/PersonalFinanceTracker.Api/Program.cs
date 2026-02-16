@@ -2,6 +2,7 @@ using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using PersonalFinanceTracker.Api.Middleware;
@@ -63,6 +64,16 @@ builder.Services
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(2)
         };
+    });
+
+builder.Services
+    .AddAuthorization(options =>
+    {
+        options.AddPolicy("FinanceApi", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim("scope", "finance-api");
+        });
     });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

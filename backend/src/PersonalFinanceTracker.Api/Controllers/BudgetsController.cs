@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonalFinanceTracker.Application.Abstractions.Services;
 using PersonalFinanceTracker.Application.Contracts.Budgets;
@@ -5,6 +6,7 @@ using PersonalFinanceTracker.Application.Contracts.Budgets;
 namespace PersonalFinanceTracker.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = "FinanceApi")]
 [Route("api/[controller]")]
 public sealed class BudgetsController(IBudgetService budgetService) : ControllerBase
 {
