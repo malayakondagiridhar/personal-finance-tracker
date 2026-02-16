@@ -1,3 +1,4 @@
+using PersonalFinanceTracker.Api.Middleware;
 using PersonalFinanceTracker.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseGlobalExceptionHandling();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
