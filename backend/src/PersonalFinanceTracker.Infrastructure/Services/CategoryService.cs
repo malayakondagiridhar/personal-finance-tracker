@@ -8,14 +8,14 @@ namespace PersonalFinanceTracker.Infrastructure.Services;
 
 public sealed class CategoryService(AppDbContext dbContext) : ICategoryService
 {
-    public async Task<CategoryDto> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<CategoryDto> CreateAsync(Guid userId, CreateCategoryRequest request, CancellationToken cancellationToken = default)
     {
         var normalizedName = request.Name.Trim();
 
         var nameExists = await dbContext.Categories
             .AsNoTracking()
             .AnyAsync(
-                x => x.UserId == request.UserId && x.Name.ToLower() == normalizedName.ToLower(),
+                x => x.UserId == userId && x.Name.ToLower() == normalizedName.ToLower(),
                 cancellationToken);
 
         if (nameExists)
@@ -25,7 +25,7 @@ public sealed class CategoryService(AppDbContext dbContext) : ICategoryService
 
         var category = new Category
         {
-            UserId = request.UserId,
+            UserId = userId,
             Name = normalizedName,
             Description = request.Description?.Trim(),
             IsDefault = request.IsDefault,

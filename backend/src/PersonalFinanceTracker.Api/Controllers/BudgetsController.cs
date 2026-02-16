@@ -16,9 +16,7 @@ public sealed class BudgetsController(IBudgetService budgetService) : Controller
     public async Task<IActionResult> Create([FromBody] CreateBudgetRequest request, CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserId();
-        var sanitizedRequest = request with { UserId = userId };
-
-        var created = await budgetService.CreateAsync(sanitizedRequest, cancellationToken);
+        var created = await budgetService.CreateAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(GetStatus), new { created.Year, created.Month }, created);
     }
 

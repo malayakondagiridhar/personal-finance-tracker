@@ -21,7 +21,7 @@ public sealed class CategoriesApiTests : IClassFixture<PersonalFinanceApiFactory
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var createRequest = new CreateCategoryRequest(Guid.NewGuid(), "Food", "Groceries", false);
+        var createRequest = new CreateCategoryRequest("Food", "Groceries", false);
         var createResponse = await client.PostAsJsonAsync("/api/categories", createRequest);
 
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
@@ -42,15 +42,17 @@ public sealed class CategoriesApiTests : IClassFixture<PersonalFinanceApiFactory
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var request = new CreateCategoryRequest(Guid.NewGuid(), "Utilities", null, false);
+        var request = new CreateCategoryRequest("Utilities", null, false);
 
         var firstResponse = await client.PostAsJsonAsync("/api/categories", request);
         Assert.Equal(HttpStatusCode.Created, firstResponse.StatusCode);
 
-        var secondResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "utilities", null, false));
+        var secondResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("utilities", null, false));
         Assert.Equal(HttpStatusCode.Conflict, secondResponse.StatusCode);
 
         var payload = await secondResponse.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal(409, payload.GetProperty("status").GetInt32());
     }
 }
+
+

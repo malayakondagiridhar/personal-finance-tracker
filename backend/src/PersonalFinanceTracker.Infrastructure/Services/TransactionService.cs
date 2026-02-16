@@ -8,13 +8,13 @@ namespace PersonalFinanceTracker.Infrastructure.Services;
 
 public sealed class TransactionService(AppDbContext dbContext) : ITransactionService
 {
-    public async Task<TransactionDto> CreateAsync(CreateTransactionRequest request, CancellationToken cancellationToken = default)
+    public async Task<TransactionDto> CreateAsync(Guid userId, CreateTransactionRequest request, CancellationToken cancellationToken = default)
     {
-        await EnsureCategoryBelongsToUserAsync(request.CategoryId, request.UserId, cancellationToken);
+        await EnsureCategoryBelongsToUserAsync(request.CategoryId, userId, cancellationToken);
 
         var transaction = new Transaction
         {
-            UserId = request.UserId,
+            UserId = userId,
             CategoryId = request.CategoryId,
             Amount = request.Amount,
             Type = request.Type,

@@ -7,7 +7,6 @@ public sealed class CreateTransactionRequestValidator : AbstractValidator<Create
 {
     public CreateTransactionRequestValidator()
     {
-        RuleFor(x => x.UserId).NotEmpty();
         RuleFor(x => x.CategoryId).NotEmpty();
         RuleFor(x => x.Amount).GreaterThan(0);
         RuleFor(x => x.TransactionDateUtc).LessThanOrEqualTo(DateTime.UtcNow.AddDays(1));

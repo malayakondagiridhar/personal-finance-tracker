@@ -17,9 +17,7 @@ public sealed class TransactionsController(ITransactionService transactionServic
     public async Task<IActionResult> Create([FromBody] CreateTransactionRequest request, CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserId();
-        var sanitizedRequest = request with { UserId = userId };
-
-        var created = await transactionService.CreateAsync(sanitizedRequest, cancellationToken);
+        var created = await transactionService.CreateAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(Get), null, created);
     }
 

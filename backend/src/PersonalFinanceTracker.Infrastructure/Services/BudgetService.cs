@@ -9,15 +9,15 @@ namespace PersonalFinanceTracker.Infrastructure.Services;
 
 public sealed class BudgetService(AppDbContext dbContext) : IBudgetService
 {
-    public async Task<BudgetDto> CreateAsync(CreateBudgetRequest request, CancellationToken cancellationToken = default)
+    public async Task<BudgetDto> CreateAsync(Guid userId, CreateBudgetRequest request, CancellationToken cancellationToken = default)
     {
         EnsurePeriodIsValid(request.Year, request.Month);
-        await EnsureCategoryBelongsToUserAsync(request.CategoryId, request.UserId, cancellationToken);
+        await EnsureCategoryBelongsToUserAsync(request.CategoryId, userId, cancellationToken);
 
         var existingBudget = await dbContext.Budgets
             .AsNoTracking()
             .AnyAsync(
-                x => x.UserId == request.UserId
+                x => x.UserId == userId
                      && x.CategoryId == request.CategoryId
                      && x.Year == request.Year
                      && x.Month == request.Month,
@@ -30,7 +30,7 @@ public sealed class BudgetService(AppDbContext dbContext) : IBudgetService
 
         var budget = new Budget
         {
-            UserId = request.UserId,
+            UserId = userId,
             CategoryId = request.CategoryId,
             Year = request.Year,
             Month = request.Month,

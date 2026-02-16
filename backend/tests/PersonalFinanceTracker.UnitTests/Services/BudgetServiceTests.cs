@@ -14,11 +14,12 @@ public sealed class BudgetServiceTests
 
         var request = new CreateBudgetRequest(
             Guid.NewGuid(),
-            Guid.NewGuid(),
             2026,
             13,
             1000m);
 
-        await Assert.ThrowsAsync<ArgumentException>(() => service.CreateAsync(request));
+        await Assert.ThrowsAsync<ArgumentException>(() => service.CreateAsync(Guid.NewGuid(), request));
     }
 }
+
+

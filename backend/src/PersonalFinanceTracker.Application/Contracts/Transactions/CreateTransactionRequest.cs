@@ -3,7 +3,6 @@ using PersonalFinanceTracker.Domain.Enums;
 namespace PersonalFinanceTracker.Application.Contracts.Transactions;
 
 public sealed record CreateTransactionRequest(
-    Guid UserId,
     Guid CategoryId,
     decimal Amount,
     TransactionType Type,

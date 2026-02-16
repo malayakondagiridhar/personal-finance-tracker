@@ -46,7 +46,7 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Food", null, false));
+        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Food", null, false));
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, categoryResponse.StatusCode);
@@ -72,10 +72,10 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var first = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Utilities", null, false));
+        var first = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Utilities", null, false));
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
 
-        var duplicate = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "utilities", null, false));
+        var duplicate = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("utilities", null, false));
 
         Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
 
@@ -106,3 +106,5 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
         Assert.True(payload.TryGetProperty("traceId", out _));
     }
 }
+
+

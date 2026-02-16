@@ -24,20 +24,19 @@ public sealed class BudgetsApiTests : IClassFixture<PersonalFinanceApiFactory>
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Food", "Groceries", false));
+        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Food", "Groceries", false));
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, categoryResponse.StatusCode);
         Assert.NotNull(category);
 
         var now = DateTime.UtcNow;
-        var budgetRequest = new CreateBudgetRequest(Guid.NewGuid(), category!.Id, now.Year, now.Month, 2000m);
+        var budgetRequest = new CreateBudgetRequest(category!.Id, now.Year, now.Month, 2000m);
         var budgetResponse = await client.PostAsJsonAsync("/api/budgets", budgetRequest);
 
         Assert.Equal(HttpStatusCode.Created, budgetResponse.StatusCode);
 
         var expenseRequest = new CreateTransactionRequest(
-            Guid.NewGuid(),
             category.Id,
             650m,
             TransactionType.Expense,
@@ -63,14 +62,14 @@ public sealed class BudgetsApiTests : IClassFixture<PersonalFinanceApiFactory>
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Rent", null, false));
+        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Rent", null, false));
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, categoryResponse.StatusCode);
         Assert.NotNull(category);
 
         var now = DateTime.UtcNow;
-        var request = new CreateBudgetRequest(Guid.NewGuid(), category!.Id, now.Year, now.Month, 15000m);
+        var request = new CreateBudgetRequest(category!.Id, now.Year, now.Month, 15000m);
 
         var firstResponse = await client.PostAsJsonAsync("/api/budgets", request);
         Assert.Equal(HttpStatusCode.Created, firstResponse.StatusCode);

@@ -23,14 +23,13 @@ public sealed class TransactionsApiTests : IClassFixture<PersonalFinanceApiFacto
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Travel", "Cab and fuel", false));
+        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Travel", "Cab and fuel", false));
         var createdCategory = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, categoryResponse.StatusCode);
         Assert.NotNull(createdCategory);
 
         var transactionRequest = new CreateTransactionRequest(
-            Guid.NewGuid(),
             createdCategory!.Id,
             1200m,
             TransactionType.Expense,

@@ -33,6 +33,8 @@ public sealed class CategoryServiceTests
         var service = new CategoryService(dbContext);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            service.CreateAsync(new CreateCategoryRequest(userId, "food", null, false)));
+            service.CreateAsync(userId, new CreateCategoryRequest("food", null, false)));
     }
 }
+
+

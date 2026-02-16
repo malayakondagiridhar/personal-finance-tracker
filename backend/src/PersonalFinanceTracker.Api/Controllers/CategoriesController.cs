@@ -16,9 +16,7 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserId();
-        var sanitizedRequest = request with { UserId = userId };
-
-        var created = await categoryService.CreateAsync(sanitizedRequest, cancellationToken);
+        var created = await categoryService.CreateAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(GetAll), null, created);
     }
 

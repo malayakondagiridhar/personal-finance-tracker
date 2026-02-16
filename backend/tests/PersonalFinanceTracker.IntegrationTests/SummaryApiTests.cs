@@ -23,10 +23,10 @@ public sealed class SummaryApiTests : IClassFixture<PersonalFinanceApiFactory>
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var foodCategoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Food", null, false));
+        var foodCategoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Food", null, false));
         var foodCategory = await foodCategoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
-        var salaryCategoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Salary", null, false));
+        var salaryCategoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest("Salary", null, false));
         var salaryCategory = await salaryCategoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, foodCategoryResponse.StatusCode);
@@ -37,7 +37,6 @@ public sealed class SummaryApiTests : IClassFixture<PersonalFinanceApiFactory>
         var now = DateTime.UtcNow;
 
         var incomeResponse = await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest(
-            Guid.NewGuid(),
             salaryCategory!.Id,
             5000m,
             TransactionType.Income,
@@ -45,7 +44,6 @@ public sealed class SummaryApiTests : IClassFixture<PersonalFinanceApiFactory>
             "Monthly salary"));
 
         var expenseResponse = await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest(
-            Guid.NewGuid(),
             foodCategory!.Id,
             1200m,
             TransactionType.Expense,
