@@ -120,28 +120,38 @@ Layer intent:
 - Added global exception mapping to keep API semantics predictable (`400/404/409/500`).
 - Added CI quality gates and integration tests early to prevent regressions.
 
-## API endpoints (current)
+## API endpoints (v1)
 
-- `POST /api/categories`
-- `GET /api/categories?userId={userId}`
-- `POST /api/transactions`
-- `GET /api/transactions?userId={userId}&fromDateUtc=&toDateUtc=&categoryId=&type=`
-- `PUT /api/transactions/{transactionId}`
-- `DELETE /api/transactions/{transactionId}`
-- `POST /api/budgets`
-- `GET /api/budgets/status?userId={userId}&year={year}&month={month}`
-- `GET /api/summary/monthly?userId={userId}&year={year}&month={month}`
+> Base path: `/api/v1`
+
+- `POST /api/v1/categories`
+- `GET /api/v1/categories`
+- `POST /api/v1/transactions`
+- `GET /api/v1/transactions?fromDateUtc=&toDateUtc=&categoryId=&type=`
+- `PUT /api/v1/transactions/{transactionId}`
+- `DELETE /api/v1/transactions/{transactionId}`
+- `POST /api/v1/budgets`
+- `GET /api/v1/budgets/status?year={year}&month={month}`
+- `GET /api/v1/summary/monthly?year={year}&month={month}`
+
+### Auth requirement
+
+All finance endpoints require:
+- `Authorization: Bearer <jwt>`
+- JWT claim `scope=finance-api`
+
+User context is derived from token claims and is no longer accepted from query/body inputs on protected operations.
 
 ## Sample requests
 
 Create category:
 
 ```http
-POST /api/categories
+POST /api/v1/categories
 Content-Type: application/json
+Authorization: Bearer <jwt>
 
 {
-  "userId": "00000000-0000-0000-0000-000000000001",
   "name": "Food",
   "description": "Groceries and dining",
   "isDefault": false
@@ -151,11 +161,11 @@ Content-Type: application/json
 Create transaction:
 
 ```http
-POST /api/transactions
+POST /api/v1/transactions
 Content-Type: application/json
+Authorization: Bearer <jwt>
 
 {
-  "userId": "00000000-0000-0000-0000-000000000001",
   "categoryId": "00000000-0000-0000-0000-000000000010",
   "amount": 950.50,
   "type": 2,
@@ -234,3 +244,4 @@ GitHub Actions CI runs on push/PR to `main` and validates:
 ---
 
 If you want to contribute, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
