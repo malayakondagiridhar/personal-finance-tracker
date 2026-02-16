@@ -10,26 +10,43 @@ namespace PersonalFinanceTracker.IntegrationTests;
 
 public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFactory>
 {
-    private readonly HttpClient _client;
     private readonly PersonalFinanceApiFactory _factory;
 
     public ApiErrorContractTests(PersonalFinanceApiFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
+    }
+
+    [Fact]
+    public async Task Request_WithoutToken_ShouldReturn401()
+    {
+        var client = _factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
         {
             BaseAddress = new Uri("https://localhost"),
             AllowAutoRedirect = false
         });
+
+        var response = await client.GetAsync("/api/categories");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Request_WithoutScopeClaim_ShouldReturn403()
+    {
+        var userId = Guid.NewGuid();
+        var client = AuthenticatedClientFactory.Create(_factory, userId, includeScope: false);
+
+        var response = await client.GetAsync("/api/categories");
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]
     public async Task UpdateTransaction_NotFound_ShouldReturn404_WithStandardErrorPayload()
     {
         var userId = Guid.NewGuid();
-        await TestDataSeeder.SeedUserAsync(_factory, userId);
+        var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var categoryResponse = await _client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(userId, "Food", null, false));
+        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Food", null, false));
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, categoryResponse.StatusCode);
@@ -38,7 +55,7 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
         var missingTransactionId = Guid.NewGuid();
         var updateRequest = new UpdateTransactionRequest(category!.Id, 500m, TransactionType.Expense, DateTime.UtcNow, "Update missing");
 
-        var response = await _client.PutAsJsonAsync($"/api/transactions/{missingTransactionId}", updateRequest);
+        var response = await client.PutAsJsonAsync($"/api/transactions/{missingTransactionId}", updateRequest);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
@@ -53,12 +70,12 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
     public async Task CreateCategory_Duplicate_ShouldReturn409_WithStandardErrorPayload()
     {
         var userId = Guid.NewGuid();
-        await TestDataSeeder.SeedUserAsync(_factory, userId);
+        var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var first = await _client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(userId, "Utilities", null, false));
+        var first = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Utilities", null, false));
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
 
-        var duplicate = await _client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(userId, "utilities", null, false));
+        var duplicate = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "utilities", null, false));
 
         Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
 
@@ -73,12 +90,12 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
     public async Task GetTransactions_InvalidDateRange_ShouldReturn400_WithStandardErrorPayload()
     {
         var userId = Guid.NewGuid();
-        await TestDataSeeder.SeedUserAsync(_factory, userId);
+        var client = AuthenticatedClientFactory.Create(_factory, userId);
 
         var fromDate = DateTime.UtcNow.ToString("O");
         var toDate = DateTime.UtcNow.AddDays(-3).ToString("O");
 
-        var response = await _client.GetAsync($"/api/transactions?userId={userId}&fromDateUtc={Uri.EscapeDataString(fromDate)}&toDateUtc={Uri.EscapeDataString(toDate)}");
+        var response = await client.GetAsync($"/api/transactions?fromDateUtc={Uri.EscapeDataString(fromDate)}&toDateUtc={Uri.EscapeDataString(toDate)}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
