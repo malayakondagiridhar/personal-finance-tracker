@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonalFinanceTracker.Api.Auth;
@@ -7,8 +8,9 @@ using PersonalFinanceTracker.Application.Contracts.Categories;
 namespace PersonalFinanceTracker.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize(Policy = "FinanceApi")]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public sealed class CategoriesController(ICategoryService categoryService) : ControllerBase
 {
     [HttpPost]
@@ -16,9 +18,7 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserId();
-        var sanitizedRequest = request with { UserId = userId };
-
-        var created = await categoryService.CreateAsync(sanitizedRequest, cancellationToken);
+        var created = await categoryService.CreateAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(GetAll), null, created);
     }
 

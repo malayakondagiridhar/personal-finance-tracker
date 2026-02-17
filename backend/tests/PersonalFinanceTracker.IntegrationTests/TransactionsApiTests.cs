@@ -23,27 +23,26 @@ public sealed class TransactionsApiTests : IClassFixture<PersonalFinanceApiFacto
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Travel", "Cab and fuel", false));
+        var categoryResponse = await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Travel", "Cab and fuel", false));
         var createdCategory = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, categoryResponse.StatusCode);
         Assert.NotNull(createdCategory);
 
         var transactionRequest = new CreateTransactionRequest(
-            Guid.NewGuid(),
             createdCategory!.Id,
             1200m,
             TransactionType.Expense,
             DateTime.UtcNow,
             "Airport cab");
 
-        var createTransactionResponse = await client.PostAsJsonAsync("/api/transactions", transactionRequest);
+        var createTransactionResponse = await client.PostAsJsonAsync("/api/v1/transactions", transactionRequest);
         Assert.Equal(HttpStatusCode.Created, createTransactionResponse.StatusCode);
 
         var fromDate = DateTime.UtcNow.AddDays(-1).ToString("O");
         var toDate = DateTime.UtcNow.AddDays(1).ToString("O");
 
-        var getResponse = await client.GetAsync($"/api/transactions?fromDateUtc={Uri.EscapeDataString(fromDate)}&toDateUtc={Uri.EscapeDataString(toDate)}&type={(int)TransactionType.Expense}");
+        var getResponse = await client.GetAsync($"/api/v1/transactions?fromDateUtc={Uri.EscapeDataString(fromDate)}&toDateUtc={Uri.EscapeDataString(toDate)}&type={(int)TransactionType.Expense}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
 
         var transactions = await getResponse.Content.ReadFromJsonAsync<List<TransactionDto>>();
@@ -62,7 +61,7 @@ public sealed class TransactionsApiTests : IClassFixture<PersonalFinanceApiFacto
         var fromDate = DateTime.UtcNow.ToString("O");
         var toDate = DateTime.UtcNow.AddDays(-2).ToString("O");
 
-        var response = await client.GetAsync($"/api/transactions?fromDateUtc={Uri.EscapeDataString(fromDate)}&toDateUtc={Uri.EscapeDataString(toDate)}");
+        var response = await client.GetAsync($"/api/v1/transactions?fromDateUtc={Uri.EscapeDataString(fromDate)}&toDateUtc={Uri.EscapeDataString(toDate)}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
@@ -70,3 +69,4 @@ public sealed class TransactionsApiTests : IClassFixture<PersonalFinanceApiFacto
         Assert.Equal(400, payload.GetProperty("status").GetInt32());
     }
 }
+

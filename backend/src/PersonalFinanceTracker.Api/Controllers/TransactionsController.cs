@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonalFinanceTracker.Api.Auth;
@@ -8,8 +9,9 @@ using PersonalFinanceTracker.Domain.Enums;
 namespace PersonalFinanceTracker.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize(Policy = "FinanceApi")]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public sealed class TransactionsController(ITransactionService transactionService) : ControllerBase
 {
     [HttpPost]
@@ -17,9 +19,7 @@ public sealed class TransactionsController(ITransactionService transactionServic
     public async Task<IActionResult> Create([FromBody] CreateTransactionRequest request, CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserId();
-        var sanitizedRequest = request with { UserId = userId };
-
-        var created = await transactionService.CreateAsync(sanitizedRequest, cancellationToken);
+        var created = await transactionService.CreateAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(Get), null, created);
     }
 

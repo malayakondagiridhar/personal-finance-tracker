@@ -1,4 +1,5 @@
 using PersonalFinanceTracker.Application.Contracts.Categories;
+using PersonalFinanceTracker.Application.Exceptions;
 using PersonalFinanceTracker.Domain.Entities;
 using PersonalFinanceTracker.Infrastructure.Services;
 using PersonalFinanceTracker.UnitTests.TestSupport;
@@ -8,7 +9,7 @@ namespace PersonalFinanceTracker.UnitTests.Services;
 public sealed class CategoryServiceTests
 {
     [Fact]
-    public async Task CreateAsync_DuplicateNameForSameUser_ShouldThrowInvalidOperationException()
+    public async Task CreateAsync_DuplicateNameForSameUser_ShouldThrowConflictException()
     {
         await using var dbContext = TestDbContextFactory.Create();
 
@@ -32,7 +33,9 @@ public sealed class CategoryServiceTests
 
         var service = new CategoryService(dbContext);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            service.CreateAsync(new CreateCategoryRequest(userId, "food", null, false)));
+        await Assert.ThrowsAsync<ConflictException>(() =>
+            service.CreateAsync(userId, new CreateCategoryRequest("food", null, false)));
     }
 }
+
+

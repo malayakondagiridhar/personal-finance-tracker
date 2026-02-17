@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonalFinanceTracker.Api.Auth;
@@ -7,8 +8,9 @@ using PersonalFinanceTracker.Application.Contracts.Budgets;
 namespace PersonalFinanceTracker.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize(Policy = "FinanceApi")]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public sealed class BudgetsController(IBudgetService budgetService) : ControllerBase
 {
     [HttpPost]
@@ -16,9 +18,7 @@ public sealed class BudgetsController(IBudgetService budgetService) : Controller
     public async Task<IActionResult> Create([FromBody] CreateBudgetRequest request, CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserId();
-        var sanitizedRequest = request with { UserId = userId };
-
-        var created = await budgetService.CreateAsync(sanitizedRequest, cancellationToken);
+        var created = await budgetService.CreateAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(GetStatus), new { created.Year, created.Month }, created);
     }
 

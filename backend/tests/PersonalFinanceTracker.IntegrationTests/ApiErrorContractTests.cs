@@ -26,7 +26,7 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
             AllowAutoRedirect = false
         });
 
-        var response = await client.GetAsync("/api/categories");
+        var response = await client.GetAsync("/api/v1/categories");
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
@@ -36,7 +36,7 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId, includeScope: false);
 
-        var response = await client.GetAsync("/api/categories");
+        var response = await client.GetAsync("/api/v1/categories");
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
@@ -46,7 +46,7 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Food", null, false));
+        var categoryResponse = await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Food", null, false));
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
         Assert.Equal(HttpStatusCode.Created, categoryResponse.StatusCode);
@@ -55,7 +55,7 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
         var missingTransactionId = Guid.NewGuid();
         var updateRequest = new UpdateTransactionRequest(category!.Id, 500m, TransactionType.Expense, DateTime.UtcNow, "Update missing");
 
-        var response = await client.PutAsJsonAsync($"/api/transactions/{missingTransactionId}", updateRequest);
+        var response = await client.PutAsJsonAsync($"/api/v1/transactions/{missingTransactionId}", updateRequest);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
@@ -72,10 +72,10 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
         var userId = Guid.NewGuid();
         var client = AuthenticatedClientFactory.Create(_factory, userId);
 
-        var first = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "Utilities", null, false));
+        var first = await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Utilities", null, false));
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
 
-        var duplicate = await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequest(Guid.NewGuid(), "utilities", null, false));
+        var duplicate = await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("utilities", null, false));
 
         Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
 
@@ -95,7 +95,7 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
         var fromDate = DateTime.UtcNow.ToString("O");
         var toDate = DateTime.UtcNow.AddDays(-3).ToString("O");
 
-        var response = await client.GetAsync($"/api/transactions?fromDateUtc={Uri.EscapeDataString(fromDate)}&toDateUtc={Uri.EscapeDataString(toDate)}");
+        var response = await client.GetAsync($"/api/v1/transactions?fromDateUtc={Uri.EscapeDataString(fromDate)}&toDateUtc={Uri.EscapeDataString(toDate)}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
@@ -106,3 +106,6 @@ public sealed class ApiErrorContractTests : IClassFixture<PersonalFinanceApiFact
         Assert.True(payload.TryGetProperty("traceId", out _));
     }
 }
+
+
+
