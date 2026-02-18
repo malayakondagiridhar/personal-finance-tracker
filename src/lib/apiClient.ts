@@ -75,20 +75,24 @@ async function fetchWithToken(path: string, init?: RequestInit, forceRefresh = f
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   let response = await fetchWithToken(path, init, false)
-  let retriedExpiredToken = false
+  let retriedWithRefresh = false
 
-  if (response.status === 401 && auth.currentUser) {
-    const tokenExpired = response.headers.get('x-token-expired') === 'true'
+  if (response.status === 401) {
+    if (!auth.currentUser && typeof auth.authStateReady === 'function') {
+      await auth.authStateReady()
+    }
 
-    if (tokenExpired) {
-      retriedExpiredToken = true
+    if (auth.currentUser) {
+      retriedWithRefresh = true
       response = await fetchWithToken(path, init, true)
     }
+
+    const tokenExpired = response.headers.get('x-token-expired') === 'true'
 
     // Only force sign-out when expired-token refresh retry also fails.
     // For generic 401s (for example backend auth configuration mismatch),
     // keep session and let UI surface actionable error instead of auth-loop.
-    if (response.status === 401 && retriedExpiredToken) {
+    if (response.status === 401 && tokenExpired && retriedWithRefresh) {
       window.dispatchEvent(new CustomEvent('pft:unauthorized', { detail: { reason: 'expired-token' } }))
     }
   }
@@ -96,7 +100,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   if (!response.ok) {
     const error = await parseError(response)
 
-    if (error.status === 401 && !retriedExpiredToken) {
+    if (error.status === 401 && !retriedWithRefresh) {
       throw new ApiError(
         `${error.message} (If this persists after Google sign-in, verify backend Auth__FirebaseProjectId matches your Firebase project and API auth mode.)`,
         error.status,
