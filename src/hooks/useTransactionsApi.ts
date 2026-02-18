@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { listCategories } from '../services/categoriesApi'
+import { toUserMessage } from '../lib/apiErrorHandling'
 import {
   createTransaction,
   deleteTransaction,
@@ -25,7 +26,7 @@ export function useTransactionsApi() {
       setCategories(categoriesResponse.items)
       setTransactions(transactionsResponse.items)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load transactions')
+      setError(toUserMessage(err, 'Failed to load transactions'))
     } finally {
       setLoading(false)
     }

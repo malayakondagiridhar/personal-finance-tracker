@@ -1,20 +1,63 @@
 import { auth } from './firebase'
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? '/api/v1'
+const API_VERSION_PREFIX = import.meta.env.VITE_API_VERSION_PREFIX || '/api/v1'
+
+function resolveApiBaseUrl() {
+  const configured = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim()
+
+  if (configured) {
+    return configured.replace(/\/$/, '')
+  }
+
+  // In dev, default to relative API path so Vite proxy handles backend routing.
+  // This avoids accidental calls to the frontend origin that return index.html.
+  return API_VERSION_PREFIX
+}
+
+const API_BASE_URL = resolveApiBaseUrl()
+
+interface ApiErrorPayload {
+  title?: string
+  detail?: string
+  status?: number
+  traceId?: string
+}
 
 export class ApiError extends Error {
   status: number
+  traceId?: string
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, traceId?: string) {
     super(message)
     this.status = status
+    this.traceId = traceId
   }
 }
 
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = await auth.currentUser?.getIdToken()
+async function parseError(response: Response): Promise<ApiError> {
+  const fallback = `Request failed with status ${response.status}`
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
+
+  if (!contentType.includes('application/json')) {
+    return new ApiError(
+      'Received non-JSON response from API. Verify frontend API base URL / Vite proxy target.',
+      response.status,
+    )
+  }
+
+  try {
+    const payload = (await response.json()) as ApiErrorPayload
+    return new ApiError(payload.detail ?? payload.title ?? fallback, response.status, payload.traceId)
+  } catch {
+    return new ApiError(fallback, response.status)
+  }
+}
+
+async function fetchWithToken(path: string, init?: RequestInit, forceRefresh = false): Promise<Response> {
+  const token = await auth.currentUser?.getIdToken(forceRefresh)
+
+  return fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
@@ -22,19 +65,37 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
       ...(init?.headers ?? {}),
     },
   })
+}
+
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  let response = await fetchWithToken(path, init, false)
+
+  if (response.status === 401 && auth.currentUser) {
+    const tokenExpired = response.headers.get('x-token-expired') === 'true'
+
+    if (tokenExpired) {
+      response = await fetchWithToken(path, init, true)
+    }
+
+    if (response.status === 401) {
+      window.dispatchEvent(new CustomEvent('pft:unauthorized'))
+    }
+  }
 
   if (!response.ok) {
-    const fallback = `Request failed with status ${response.status}`
-    try {
-      const data = (await response.json()) as { detail?: string; title?: string }
-      throw new ApiError(data.detail ?? data.title ?? fallback, response.status)
-    } catch {
-      throw new ApiError(fallback, response.status)
-    }
+    throw await parseError(response)
   }
 
   if (response.status === 204) {
     return undefined as T
+  }
+
+  const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
+  if (!contentType.includes('application/json')) {
+    throw new ApiError(
+      'Received non-JSON response from API. Verify frontend API base URL / Vite proxy target.',
+      response.status,
+    )
   }
 
   return response.json() as Promise<T>

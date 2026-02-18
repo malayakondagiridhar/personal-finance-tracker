@@ -2,6 +2,13 @@
 
 ## Base URL
 - All endpoints are versioned under `/api/v1`.
+- Frontend environment wiring:
+  - `VITE_API_BASE_URL` (recommended in staging/prod)
+  - `VITE_API_VERSION_PREFIX` (default `/api/v1`)
+  - `VITE_API_PROXY_TARGET` (dev-only Vite proxy target, default `http://localhost:5256`)
+- Dev default behavior when `VITE_API_BASE_URL` is not set:
+  - frontend calls relative `/api/v1/...`
+  - Vite proxies `/api/v1` to `VITE_API_PROXY_TARGET`
 
 ## Authentication
 Required for all finance endpoints:
@@ -36,6 +43,11 @@ Transaction list:
 - `page >= 1`, `pageSize` between 1 and 100
 
 Validation failures return HTTP 400 with standard error payload.
+
+Client-side contract handling expectations:
+- `409` (conflict): show actionable message (for example duplicate category or existing monthly budget).
+- `429` (rate limited): show retry guidance and avoid immediate repeated retries.
+- `401` (expired token): rely on centralized refresh-retry path; if still unauthorized, redirect to auth.
 
 ## Rate Limiting
 Global fixed-window limiter:
