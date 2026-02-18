@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using PersonalFinanceTracker.Api.Middleware;
 using PersonalFinanceTracker.Infrastructure;
 
@@ -163,15 +164,47 @@ builder.Services.AddRateLimiter(options =>
     };
 });
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Personal Finance Tracker API",
+        Version = "v1"
+    });
+
+    var bearerScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Enter a valid bearer token. Example: Bearer <token>",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Reference = new OpenApiReference
+        {
+            Type = ReferenceType.SecurityScheme,
+            Id = "Bearer"
+        }
+    };
+
+    options.AddSecurityDefinition("Bearer", bearerScheme);
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            bearerScheme,
+            []
+        }
+    });
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseGlobalExceptionHandling();
