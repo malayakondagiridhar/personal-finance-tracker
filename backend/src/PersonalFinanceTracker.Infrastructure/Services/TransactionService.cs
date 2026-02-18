@@ -89,13 +89,13 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<TransactionDto> UpdateAsync(Guid transactionId, UpdateTransactionRequest request, CancellationToken cancellationToken = default)
+    public async Task<TransactionDto> UpdateAsync(Guid userId, Guid transactionId, UpdateTransactionRequest request, CancellationToken cancellationToken = default)
     {
         var transaction = await dbContext.Transactions
-            .FirstOrDefaultAsync(x => x.Id == transactionId, cancellationToken)
+            .FirstOrDefaultAsync(x => x.Id == transactionId && x.UserId == userId, cancellationToken)
             ?? throw new NotFoundException($"Transaction '{transactionId}' was not found.");
 
-        await EnsureCategoryBelongsToUserAsync(request.CategoryId, transaction.UserId, cancellationToken);
+        await EnsureCategoryBelongsToUserAsync(request.CategoryId, userId, cancellationToken);
 
         transaction.CategoryId = request.CategoryId;
         transaction.Amount = request.Amount;
@@ -109,10 +109,10 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
         return ToDto(transaction);
     }
 
-    public async Task DeleteAsync(Guid transactionId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid userId, Guid transactionId, CancellationToken cancellationToken = default)
     {
         var transaction = await dbContext.Transactions
-            .FirstOrDefaultAsync(x => x.Id == transactionId, cancellationToken)
+            .FirstOrDefaultAsync(x => x.Id == transactionId && x.UserId == userId, cancellationToken)
             ?? throw new NotFoundException($"Transaction '{transactionId}' was not found.");
 
         dbContext.Transactions.Remove(transaction);

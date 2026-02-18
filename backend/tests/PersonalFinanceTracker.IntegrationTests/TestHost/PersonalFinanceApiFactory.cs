@@ -12,6 +12,7 @@ public sealed class PersonalFinanceApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("DatabaseProvider", "InMemory");
         builder.UseSetting("InMemoryDatabaseName", databaseName);
 
+        builder.UseSetting("Auth:FirebaseProjectId", string.Empty);
         builder.UseSetting("Auth:Issuer", TestAuthDefaults.Issuer);
         builder.UseSetting("Auth:Audience", TestAuthDefaults.Audience);
         builder.UseSetting("Auth:SigningKey", TestAuthDefaults.SigningKey);

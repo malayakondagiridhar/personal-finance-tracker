@@ -17,7 +17,7 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
     {
-        var userId = User.GetRequiredUserId();
+        var userId = HttpContext.GetRequiredUserId();
         var created = await categoryService.CreateAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(GetAll), null, created);
     }
@@ -31,7 +31,7 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
         [FromQuery] string? sortDirection = "asc",
         CancellationToken cancellationToken = default)
     {
-        var userId = User.GetRequiredUserId();
+        var userId = HttpContext.GetRequiredUserId();
         var categories = await categoryService.GetAllAsync(userId, page, pageSize, sortBy, sortDirection, cancellationToken);
         return Ok(categories);
     }

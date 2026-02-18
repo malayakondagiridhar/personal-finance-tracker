@@ -4,18 +4,13 @@ namespace PersonalFinanceTracker.Api.Auth;
 
 public static class ClaimsPrincipalExtensions
 {
-    public static Guid GetRequiredUserId(this ClaimsPrincipal principal)
+    public static Guid? GetClaimedUserIdOrNull(this ClaimsPrincipal principal)
     {
         var raw = principal.FindFirstValue(ClaimTypes.NameIdentifier)
                   ?? principal.FindFirstValue("user_id")
                   ?? principal.FindFirstValue("sub");
 
-        if (string.IsNullOrWhiteSpace(raw) || !Guid.TryParse(raw, out var userId))
-        {
-            throw new UnauthorizedAccessException("Authenticated token must include a valid user identifier claim.");
-        }
-
-        return userId;
+        return Guid.TryParse(raw, out var userId) ? userId : null;
     }
 
     public static string GetExternalAuthId(this ClaimsPrincipal principal)

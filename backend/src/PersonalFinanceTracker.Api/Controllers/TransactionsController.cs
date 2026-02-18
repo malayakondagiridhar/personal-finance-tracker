@@ -18,7 +18,7 @@ public sealed class TransactionsController(ITransactionService transactionServic
     [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] CreateTransactionRequest request, CancellationToken cancellationToken)
     {
-        var userId = User.GetRequiredUserId();
+        var userId = HttpContext.GetRequiredUserId();
         var created = await transactionService.CreateAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(Get), null, created);
     }
@@ -36,7 +36,7 @@ public sealed class TransactionsController(ITransactionService transactionServic
         [FromQuery] string? sortDirection = "desc",
         CancellationToken cancellationToken = default)
     {
-        var userId = User.GetRequiredUserId();
+        var userId = HttpContext.GetRequiredUserId();
         var query = new TransactionQuery(userId, fromDateUtc, toDateUtc, categoryId, type, page, pageSize, sortBy, sortDirection);
         var data = await transactionService.GetAsync(query, cancellationToken);
         return Ok(data);
@@ -46,7 +46,8 @@ public sealed class TransactionsController(ITransactionService transactionServic
     [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> Update(Guid transactionId, [FromBody] UpdateTransactionRequest request, CancellationToken cancellationToken)
     {
-        var updated = await transactionService.UpdateAsync(transactionId, request, cancellationToken);
+        var userId = HttpContext.GetRequiredUserId();
+        var updated = await transactionService.UpdateAsync(userId, transactionId, request, cancellationToken);
         return Ok(updated);
     }
 
@@ -54,7 +55,8 @@ public sealed class TransactionsController(ITransactionService transactionServic
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(Guid transactionId, CancellationToken cancellationToken)
     {
-        await transactionService.DeleteAsync(transactionId, cancellationToken);
+        var userId = HttpContext.GetRequiredUserId();
+        await transactionService.DeleteAsync(userId, transactionId, cancellationToken);
         return NoContent();
     }
 }
