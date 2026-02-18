@@ -41,6 +41,11 @@ Transaction list:
 
 Validation failures return HTTP 400 with standard error payload.
 
+Client-side contract handling expectations:
+- `409` (conflict): show actionable message (for example duplicate category or existing monthly budget).
+- `429` (rate limited): show retry guidance and avoid immediate repeated retries.
+- `401` (expired token): rely on centralized refresh-retry path; if still unauthorized, redirect to auth.
+
 ## Rate Limiting
 Global fixed-window limiter:
 - 60 requests per minute per authenticated subject (fallback to client IP for anonymous traffic)

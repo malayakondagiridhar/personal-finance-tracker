@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { Skeleton } from '../components/feedback/Skeleton'
 import { useToast } from '../components/feedback/ToastProvider'
 import { useTransactionsApi } from '../hooks/useTransactionsApi'
+import { toUserMessage } from '../lib/apiErrorHandling'
 import { updateTransaction, type TransactionQueryParams } from '../services/transactionsApi'
 import type { CreateTransactionRequest, TransactionDto, TransactionType } from '../types/api'
 
@@ -56,7 +57,7 @@ export default function TransactionsPage() {
       setForm(prev => ({ ...prev, amount: 0, note: '' }))
       await applyFilters()
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Failed to add transaction', 'error')
+      notify(toUserMessage(err, 'Failed to add transaction'), 'error')
     }
   }
 
@@ -75,7 +76,7 @@ export default function TransactionsPage() {
       notify('Transaction updated', 'success')
       await applyFilters()
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Failed to update transaction', 'error')
+      notify(toUserMessage(err, 'Failed to update transaction'), 'error')
     }
   }
 
@@ -151,8 +152,12 @@ export default function TransactionsPage() {
                   <td className="text-right">
                     <button onClick={() => setEditing(transaction)} className="mr-3 text-blue-600 hover:text-blue-800">Edit</button>
                     <button onClick={async () => {
-                      await removeTransaction(transaction.id)
-                      notify('Transaction deleted', 'success')
+                      try {
+                        await removeTransaction(transaction.id)
+                        notify('Transaction deleted', 'success')
+                      } catch (err) {
+                        notify(toUserMessage(err, 'Failed to delete transaction'), 'error')
+                      }
                     }} className="text-red-600 hover:text-red-800">Delete</button>
                   </td>
                 </tr>

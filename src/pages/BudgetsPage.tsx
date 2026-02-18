@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Skeleton } from '../components/feedback/Skeleton'
 import { useToast } from '../components/feedback/ToastProvider'
+import { toUserMessage } from '../lib/apiErrorHandling'
 import { createBudget, getBudgetStatus } from '../services/budgetsApi'
 import { listCategories } from '../services/categoriesApi'
 import type { BudgetStatusDto, CategoryDto } from '../types/api'
@@ -33,7 +34,7 @@ export default function BudgetsPage() {
       setCategories(categoriesResponse.items)
       setBudgets(budgetStatus)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load budgets')
+      setError(toUserMessage(err, 'Failed to load budgets'))
     } finally {
       setLoading(false)
     }
@@ -58,7 +59,7 @@ export default function BudgetsPage() {
       notify('Budget saved', 'success')
       await load()
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save budget'
+      const message = toUserMessage(err, 'Failed to save budget')
       setError(message)
       notify(message, 'error')
     }
