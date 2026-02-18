@@ -1,40 +1,11 @@
 import { apiFetch } from '../lib/apiClient'
-
-export type TransactionType = 0 | 1 // 0=Income, 1=Expense
-
-export interface PagedResult<T> {
-  items: T[]
-  page: number
-  pageSize: number
-  totalCount: number
-  totalPages: number
-}
-
-export interface CategoryDto {
-  id: string
-  userId: string
-  name: string
-  description?: string | null
-  isDefault: boolean
-}
-
-export interface TransactionDto {
-  id: string
-  userId: string
-  categoryId: string
-  amount: number
-  type: TransactionType
-  transactionDateUtc: string
-  note?: string | null
-}
-
-export interface CreateTransactionRequest {
-  categoryId: string
-  amount: number
-  type: TransactionType
-  transactionDateUtc: string
-  note?: string
-}
+import type {
+  CreateTransactionRequest,
+  PagedResult,
+  TransactionDto,
+  TransactionType,
+  UpdateTransactionRequest,
+} from '../types/api'
 
 export interface TransactionQueryParams {
   page?: number
@@ -43,10 +14,6 @@ export interface TransactionQueryParams {
   sortDirection?: 'asc' | 'desc'
   type?: TransactionType
   categoryId?: string
-}
-
-export async function getCategories() {
-  return apiFetch<PagedResult<CategoryDto>>('/categories?page=1&pageSize=200&sortBy=name&sortDirection=asc')
 }
 
 export async function getTransactions(params: TransactionQueryParams = {}) {
@@ -61,13 +28,20 @@ export async function getTransactions(params: TransactionQueryParams = {}) {
   return apiFetch<PagedResult<TransactionDto>>(`/transactions?${search.toString()}`)
 }
 
-export async function createTransaction(payload: CreateTransactionRequest) {
+export function createTransaction(payload: CreateTransactionRequest) {
   return apiFetch<TransactionDto>('/transactions', {
     method: 'POST',
     body: JSON.stringify(payload),
   })
 }
 
-export async function deleteTransaction(id: string) {
+export function updateTransaction(id: string, payload: UpdateTransactionRequest) {
+  return apiFetch<TransactionDto>(`/transactions/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteTransaction(id: string) {
   return apiFetch<void>(`/transactions/${id}`, { method: 'DELETE' })
 }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useTransactionsApi } from '../hooks/useTransactionsApi'
-import type { CreateTransactionRequest, TransactionType } from '../services/transactionsApi'
+import type { CreateTransactionRequest, TransactionType } from '../types/api'
 
 const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 })
 

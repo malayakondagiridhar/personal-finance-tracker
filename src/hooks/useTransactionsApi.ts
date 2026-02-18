@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
+import { listCategories } from '../services/categoriesApi'
 import {
   createTransaction,
   deleteTransaction,
-  getCategories,
   getTransactions,
-  type CategoryDto,
-  type CreateTransactionRequest,
-  type TransactionDto,
   type TransactionQueryParams,
 } from '../services/transactionsApi'
+import type { CategoryDto, CreateTransactionRequest, TransactionDto } from '../types/api'
 
 export function useTransactionsApi() {
   const [transactions, setTransactions] = useState<TransactionDto[]>([])
@@ -21,7 +19,7 @@ export function useTransactionsApi() {
     setError(null)
     try {
       const [categoriesResponse, transactionsResponse] = await Promise.all([
-        getCategories(),
+        listCategories(),
         getTransactions(query),
       ])
       setCategories(categoriesResponse.items)
