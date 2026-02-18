@@ -7,4 +7,8 @@ public sealed record TransactionQuery(
     DateTime? FromDateUtc,
     DateTime? ToDateUtc,
     Guid? CategoryId,
-    TransactionType? Type);
+    TransactionType? Type,
+    int Page,
+    int PageSize,
+    string? SortBy,
+    string? SortDirection);

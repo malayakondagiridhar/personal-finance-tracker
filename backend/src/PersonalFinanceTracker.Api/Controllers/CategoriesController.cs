@@ -24,10 +24,15 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
 
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<CategoryDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? sortBy = "name",
+        [FromQuery] string? sortDirection = "asc",
+        CancellationToken cancellationToken = default)
     {
         var userId = User.GetRequiredUserId();
-        var categories = await categoryService.GetAllAsync(userId, cancellationToken);
+        var categories = await categoryService.GetAllAsync(userId, page, pageSize, sortBy, sortDirection, cancellationToken);
         return Ok(categories);
     }
 }

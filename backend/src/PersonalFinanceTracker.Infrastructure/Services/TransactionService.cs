@@ -38,6 +38,16 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
             throw new ValidationException("fromDateUtc cannot be greater than toDateUtc.");
         }
 
+        if (query.Page < 1)
+        {
+            throw new ValidationException("page must be greater than or equal to 1.");
+        }
+
+        if (query.PageSize is < 1 or > 100)
+        {
+            throw new ValidationException("pageSize must be between 1 and 100.");
+        }
+
         var dataQuery = dbContext.Transactions
             .AsNoTracking()
             .Where(x => x.UserId == query.UserId);
@@ -62,8 +72,19 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
             dataQuery = dataQuery.Where(x => x.Type == query.Type.Value);
         }
 
-        return await dataQuery
-            .OrderByDescending(x => x.TransactionDateUtc)
+        var normalizedSortBy = (query.SortBy ?? "transactionDateUtc").Trim().ToLowerInvariant();
+        var descending = string.Equals(query.SortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+
+        var sortedQuery = normalizedSortBy switch
+        {
+            "amount" => descending ? dataQuery.OrderByDescending(x => x.Amount) : dataQuery.OrderBy(x => x.Amount),
+            "createdatutc" => descending ? dataQuery.OrderByDescending(x => x.CreatedAtUtc) : dataQuery.OrderBy(x => x.CreatedAtUtc),
+            _ => descending ? dataQuery.OrderByDescending(x => x.TransactionDateUtc) : dataQuery.OrderBy(x => x.TransactionDateUtc)
+        };
+
+        return await sortedQuery
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
             .Select(x => ToDto(x))
             .ToListAsync(cancellationToken);
     }
