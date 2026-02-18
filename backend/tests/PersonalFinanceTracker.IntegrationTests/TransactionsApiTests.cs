@@ -70,6 +70,33 @@ public sealed class TransactionsApiTests : IClassFixture<PersonalFinanceApiFacto
     }
 
     [Fact]
+    public async Task Delete_AnotherUsersTransaction_ShouldReturnNotFound()
+    {
+        var userA = Guid.NewGuid();
+        var userB = Guid.NewGuid();
+
+        var clientA = AuthenticatedClientFactory.Create(_factory, userA);
+        var clientB = AuthenticatedClientFactory.Create(_factory, userB);
+
+        var categoryAResponse = await clientA.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Food", null, false));
+        var categoryA = await categoryAResponse.Content.ReadFromJsonAsync<CategoryDto>();
+        Assert.NotNull(categoryA);
+
+        var createTxResponse = await clientA.PostAsJsonAsync("/api/v1/transactions", new CreateTransactionRequest(
+            categoryA!.Id,
+            199m,
+            TransactionType.Expense,
+            DateTime.UtcNow,
+            "userA tx"));
+
+        var createdTx = await createTxResponse.Content.ReadFromJsonAsync<TransactionDto>();
+        Assert.NotNull(createdTx);
+
+        var deleteByUserB = await clientB.DeleteAsync($"/api/v1/transactions/{createdTx!.Id}");
+        Assert.Equal(HttpStatusCode.NotFound, deleteByUserB.StatusCode);
+    }
+
+    [Fact]
     public async Task Get_WithPaginationSortAndInvalidPageSize_ShouldRespectContract()
     {
         var userId = Guid.NewGuid();
