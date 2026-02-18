@@ -14,29 +14,37 @@ public sealed class UserProfileSyncMiddleware(RequestDelegate next, IServiceScop
 
         if (principal?.Identity?.IsAuthenticated == true)
         {
-            var userId = principal.GetRequiredUserId();
             var externalAuthId = principal.GetExternalAuthId();
-            var email = principal.FindFirstValue(ClaimTypes.Email) ?? $"user-{userId:N}@local.invalid";
+            var claimedUserId = principal.GetClaimedUserIdOrNull();
+            var fallbackUserId = claimedUserId ?? Guid.NewGuid();
+            var email = principal.FindFirstValue(ClaimTypes.Email) ?? $"user-{fallbackUserId:N}@local.invalid";
             var fullName = principal.FindFirstValue(ClaimTypes.Name) ?? "Authenticated User";
 
             using var scope = scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var existingUser = await dbContext.Users
-                .FirstOrDefaultAsync(x => x.ExternalAuthId == externalAuthId || x.Id == userId, context.RequestAborted);
+                .FirstOrDefaultAsync(x => x.ExternalAuthId == externalAuthId, context.RequestAborted);
+
+            if (existingUser is null && claimedUserId.HasValue)
+            {
+                existingUser = await dbContext.Users
+                    .FirstOrDefaultAsync(x => x.Id == claimedUserId.Value, context.RequestAborted);
+            }
 
             if (existingUser is null)
             {
-                dbContext.Users.Add(new User
+                existingUser = new User
                 {
-                    Id = userId,
+                    Id = fallbackUserId,
                     ExternalAuthId = externalAuthId,
                     Email = email,
                     FullName = fullName,
                     CreatedAtUtc = DateTime.UtcNow,
                     UpdatedAtUtc = DateTime.UtcNow
-                });
+                };
 
+                dbContext.Users.Add(existingUser);
                 await dbContext.SaveChangesAsync(context.RequestAborted);
             }
             else
@@ -67,6 +75,8 @@ public sealed class UserProfileSyncMiddleware(RequestDelegate next, IServiceScop
                     await dbContext.SaveChangesAsync(context.RequestAborted);
                 }
             }
+
+            context.Items[HttpContextUserExtensions.InternalUserIdItemKey] = existingUser.Id;
         }
 
         await next(context);

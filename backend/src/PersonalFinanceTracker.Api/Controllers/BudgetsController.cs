@@ -17,7 +17,7 @@ public sealed class BudgetsController(IBudgetService budgetService) : Controller
     [ProducesResponseType(typeof(BudgetDto), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] CreateBudgetRequest request, CancellationToken cancellationToken)
     {
-        var userId = User.GetRequiredUserId();
+        var userId = HttpContext.GetRequiredUserId();
         var created = await budgetService.CreateAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(GetStatus), new { created.Year, created.Month }, created);
     }
@@ -26,7 +26,7 @@ public sealed class BudgetsController(IBudgetService budgetService) : Controller
     [ProducesResponseType(typeof(IReadOnlyList<BudgetStatusDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStatus([FromQuery] int year, [FromQuery] int month, CancellationToken cancellationToken)
     {
-        var userId = User.GetRequiredUserId();
+        var userId = HttpContext.GetRequiredUserId();
         var status = await budgetService.GetMonthlyStatusAsync(userId, year, month, cancellationToken);
         return Ok(status);
     }

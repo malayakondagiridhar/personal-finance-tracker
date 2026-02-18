@@ -18,7 +18,7 @@ public sealed class TransactionsController(ITransactionService transactionServic
     [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] CreateTransactionRequest request, CancellationToken cancellationToken)
     {
-        var userId = User.GetRequiredUserId();
+        var userId = HttpContext.GetRequiredUserId();
         var created = await transactionService.CreateAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(Get), null, created);
     }
@@ -36,7 +36,7 @@ public sealed class TransactionsController(ITransactionService transactionServic
         [FromQuery] string? sortDirection = "desc",
         CancellationToken cancellationToken = default)
     {
-        var userId = User.GetRequiredUserId();
+        var userId = HttpContext.GetRequiredUserId();
         var query = new TransactionQuery(userId, fromDateUtc, toDateUtc, categoryId, type, page, pageSize, sortBy, sortDirection);
         var data = await transactionService.GetAsync(query, cancellationToken);
         return Ok(data);

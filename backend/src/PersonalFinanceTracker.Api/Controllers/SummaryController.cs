@@ -17,7 +17,7 @@ public sealed class SummaryController(ISummaryService summaryService) : Controll
     [ProducesResponseType(typeof(MonthlySummaryDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMonthly([FromQuery] int year, [FromQuery] int month, CancellationToken cancellationToken)
     {
-        var userId = User.GetRequiredUserId();
+        var userId = HttpContext.GetRequiredUserId();
         var summary = await summaryService.GetMonthlySummaryAsync(userId, year, month, cancellationToken);
         return Ok(summary);
     }
