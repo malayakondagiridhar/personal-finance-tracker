@@ -53,13 +53,32 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        var firebaseProjectId = builder.Configuration["Auth:FirebaseProjectId"];
+
+        if (!string.IsNullOrWhiteSpace(firebaseProjectId))
+        {
+            options.Authority = $"https://securetoken.google.com/{firebaseProjectId}";
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = $"https://securetoken.google.com/{firebaseProjectId}",
+                ValidateAudience = true,
+                ValidAudience = firebaseProjectId,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(2)
+            };
+
+            return;
+        }
+
         var issuer = builder.Configuration["Auth:Issuer"];
         var audience = builder.Configuration["Auth:Audience"];
         var signingKey = builder.Configuration["Auth:SigningKey"];
 
         if (string.IsNullOrWhiteSpace(signingKey))
         {
-            throw new InvalidOperationException("Auth:SigningKey is required for JWT bearer authentication.");
+            throw new InvalidOperationException("Auth:SigningKey is required when Auth:FirebaseProjectId is not configured.");
         }
 
         options.TokenValidationParameters = new TokenValidationParameters
@@ -81,7 +100,11 @@ builder.Services
         options.AddPolicy("FinanceApi", policy =>
         {
             policy.RequireAuthenticatedUser();
-            policy.RequireClaim("scope", "finance-api");
+            policy.RequireAssertion(context =>
+                context.User.HasClaim("scope", "finance-api") ||
+                context.User.Claims.Any(c =>
+                    string.Equals(c.Type, "iss", StringComparison.OrdinalIgnoreCase) &&
+                    c.Value.StartsWith("https://securetoken.google.com/", StringComparison.OrdinalIgnoreCase)));
         });
     });
 
