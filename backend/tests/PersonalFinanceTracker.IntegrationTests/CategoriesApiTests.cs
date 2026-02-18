@@ -53,6 +53,26 @@ public sealed class CategoriesApiTests : IClassFixture<PersonalFinanceApiFactory
         var payload = await secondResponse.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal(409, payload.GetProperty("status").GetInt32());
     }
+
+    [Fact]
+    public async Task GetAll_WithPaginationAndSort_ShouldReturnPagedSortedCategories()
+    {
+        var userId = Guid.NewGuid();
+        var client = AuthenticatedClientFactory.Create(_factory, userId);
+
+        await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Alpha", null, false));
+        await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Beta", null, false));
+        await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Gamma", null, false));
+
+        var response = await client.GetAsync("/api/v1/categories?page=1&pageSize=2&sortBy=name&sortDirection=desc");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var categories = await response.Content.ReadFromJsonAsync<List<CategoryDto>>();
+        Assert.NotNull(categories);
+        Assert.Equal(2, categories!.Count);
+        Assert.Equal("Gamma", categories[0].Name);
+        Assert.Equal("Beta", categories[1].Name);
+    }
 }
 
 

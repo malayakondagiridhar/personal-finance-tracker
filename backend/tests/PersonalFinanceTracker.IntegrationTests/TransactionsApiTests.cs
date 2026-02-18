@@ -68,5 +68,35 @@ public sealed class TransactionsApiTests : IClassFixture<PersonalFinanceApiFacto
         var payload = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal(400, payload.GetProperty("status").GetInt32());
     }
+
+    [Fact]
+    public async Task Get_WithPaginationSortAndInvalidPageSize_ShouldRespectContract()
+    {
+        var userId = Guid.NewGuid();
+        var client = AuthenticatedClientFactory.Create(_factory, userId);
+
+        var categoryResponse = await client.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Food", null, false));
+        var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
+        Assert.NotNull(category);
+
+        await client.PostAsJsonAsync("/api/v1/transactions", new CreateTransactionRequest(category!.Id, 100m, TransactionType.Expense, DateTime.UtcNow.AddMinutes(-3), "t1"));
+        await client.PostAsJsonAsync("/api/v1/transactions", new CreateTransactionRequest(category.Id, 250m, TransactionType.Expense, DateTime.UtcNow.AddMinutes(-2), "t2"));
+        await client.PostAsJsonAsync("/api/v1/transactions", new CreateTransactionRequest(category.Id, 400m, TransactionType.Expense, DateTime.UtcNow.AddMinutes(-1), "t3"));
+
+        var pagedResponse = await client.GetAsync("/api/v1/transactions?page=1&pageSize=2&sortBy=amount&sortDirection=desc");
+        Assert.Equal(HttpStatusCode.OK, pagedResponse.StatusCode);
+
+        var paged = await pagedResponse.Content.ReadFromJsonAsync<List<TransactionDto>>();
+        Assert.NotNull(paged);
+        Assert.Equal(2, paged!.Count);
+        Assert.Equal(400m, paged[0].Amount);
+        Assert.Equal(250m, paged[1].Amount);
+
+        var invalidPageSizeResponse = await client.GetAsync("/api/v1/transactions?page=1&pageSize=101");
+        Assert.Equal(HttpStatusCode.BadRequest, invalidPageSizeResponse.StatusCode);
+
+        var payload = await invalidPageSizeResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(400, payload.GetProperty("status").GetInt32());
+    }
 }
 
