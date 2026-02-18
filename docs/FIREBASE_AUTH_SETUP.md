@@ -31,3 +31,6 @@ Set in `.env` (or equivalent secure local env file):
 
 ## Session/refresh reference
 See `docs/AUTH_SESSION_STRATEGY.md` for backend expectations and 401 retry contract.
+
+## End-to-end contract reference
+See `docs/AUTH_E2E_CONTRACT.md` for lifecycle, claim expectations, and failure-mode behavior.
