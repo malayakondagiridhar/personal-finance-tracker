@@ -12,11 +12,12 @@ public sealed class CategoryService(AppDbContext dbContext) : ICategoryService
     public async Task<CategoryDto> CreateAsync(Guid userId, CreateCategoryRequest request, CancellationToken cancellationToken = default)
     {
         var normalizedName = request.Name.Trim();
+        var normalizedKey = normalizedName.ToUpperInvariant();
 
         var nameExists = await dbContext.Categories
             .AsNoTracking()
             .AnyAsync(
-                x => x.UserId == userId && x.Name.ToLower() == normalizedName.ToLower(),
+                x => x.UserId == userId && x.NormalizedName == normalizedKey,
                 cancellationToken);
 
         if (nameExists)
@@ -28,6 +29,7 @@ public sealed class CategoryService(AppDbContext dbContext) : ICategoryService
         {
             UserId = userId,
             Name = normalizedName,
+            NormalizedName = normalizedKey,
             Description = request.Description?.Trim(),
             IsDefault = request.IsDefault,
             CreatedAtUtc = DateTime.UtcNow,

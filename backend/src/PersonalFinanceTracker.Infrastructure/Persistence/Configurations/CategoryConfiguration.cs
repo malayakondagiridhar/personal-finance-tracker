@@ -16,6 +16,10 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasMaxLength(80)
             .IsRequired();
 
+        builder.Property(x => x.NormalizedName)
+            .HasMaxLength(80)
+            .IsRequired();
+
         builder.Property(x => x.Description)
             .HasMaxLength(300);
 
@@ -36,7 +40,7 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(x => new { x.UserId, x.Name })
+        builder.HasIndex(x => new { x.UserId, x.NormalizedName })
             .IsUnique();
     }
 }
