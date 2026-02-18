@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using PersonalFinanceTracker.Application.Contracts.Categories;
+using PersonalFinanceTracker.Application.Contracts.Common;
 using PersonalFinanceTracker.IntegrationTests.TestHost;
 
 namespace PersonalFinanceTracker.IntegrationTests;
@@ -29,11 +30,11 @@ public sealed class CategoriesApiTests : IClassFixture<PersonalFinanceApiFactory
         var listResponse = await client.GetAsync("/api/v1/categories");
         Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
 
-        var categories = await listResponse.Content.ReadFromJsonAsync<List<CategoryDto>>();
+        var categories = await listResponse.Content.ReadFromJsonAsync<PagedResult<CategoryDto>>();
         Assert.NotNull(categories);
-        Assert.Single(categories!);
-        Assert.Equal("Food", categories[0].Name);
-        Assert.Equal(userId, categories[0].UserId);
+        Assert.Single(categories!.Items);
+        Assert.Equal("Food", categories.Items[0].Name);
+        Assert.Equal(userId, categories.Items[0].UserId);
     }
 
     [Fact]
@@ -67,11 +68,11 @@ public sealed class CategoriesApiTests : IClassFixture<PersonalFinanceApiFactory
         var response = await client.GetAsync("/api/v1/categories?page=1&pageSize=2&sortBy=name&sortDirection=desc");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var categories = await response.Content.ReadFromJsonAsync<List<CategoryDto>>();
+        var categories = await response.Content.ReadFromJsonAsync<PagedResult<CategoryDto>>();
         Assert.NotNull(categories);
-        Assert.Equal(2, categories!.Count);
-        Assert.Equal("Gamma", categories[0].Name);
-        Assert.Equal("Beta", categories[1].Name);
+        Assert.Equal(2, categories!.Items.Count);
+        Assert.Equal("Gamma", categories.Items[0].Name);
+        Assert.Equal("Beta", categories.Items[1].Name);
     }
 }
 

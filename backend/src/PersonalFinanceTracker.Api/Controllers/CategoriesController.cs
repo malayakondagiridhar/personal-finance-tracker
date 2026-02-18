@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using PersonalFinanceTracker.Api.Auth;
 using PersonalFinanceTracker.Application.Abstractions.Services;
 using PersonalFinanceTracker.Application.Contracts.Categories;
+using PersonalFinanceTracker.Application.Contracts.Common;
 
 namespace PersonalFinanceTracker.Api.Controllers;
 
@@ -23,7 +24,7 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
     }
 
     [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<CategoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResult<CategoryDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
