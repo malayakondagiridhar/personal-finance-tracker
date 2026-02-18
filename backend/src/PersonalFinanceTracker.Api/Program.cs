@@ -253,7 +253,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseGlobalExceptionHandling();
-app.UseHttpsRedirection();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("FrontendCors");
 app.UseRateLimiter();
