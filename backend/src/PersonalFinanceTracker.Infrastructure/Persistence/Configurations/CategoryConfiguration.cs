@@ -28,6 +28,9 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(x => x.UpdatedAtUtc)
             .IsRequired();
 
+        builder.Property(x => x.RowVersion)
+            .IsRowVersion();
+
         builder.HasOne(x => x.User)
             .WithMany(x => x.Categories)
             .HasForeignKey(x => x.UserId)

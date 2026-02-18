@@ -28,6 +28,9 @@ public sealed class BudgetConfiguration : IEntityTypeConfiguration<Budget>
         builder.Property(x => x.UpdatedAtUtc)
             .IsRequired();
 
+        builder.Property(x => x.RowVersion)
+            .IsRowVersion();
+
         builder.HasOne(x => x.User)
             .WithMany(x => x.Budgets)
             .HasForeignKey(x => x.UserId)
