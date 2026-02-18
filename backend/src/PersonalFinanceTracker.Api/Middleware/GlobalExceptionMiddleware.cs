@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Application.Exceptions;
 
 namespace PersonalFinanceTracker.Api.Middleware;
@@ -48,6 +49,7 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             NotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
             ConflictException => (StatusCodes.Status409Conflict, "Business rule conflict"),
+            DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "Concurrency conflict"),
             ValidationException => (StatusCodes.Status400BadRequest, "Invalid request"),
             ArgumentException => (StatusCodes.Status400BadRequest, "Invalid request"),
             _ => (StatusCodes.Status500InternalServerError, "Unexpected server error")

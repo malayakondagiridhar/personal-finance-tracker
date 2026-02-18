@@ -26,6 +26,7 @@ public sealed class CategoryServiceTests
         {
             UserId = userId,
             Name = "Food",
+            NormalizedName = "FOOD",
             IsDefault = false
         });
 
