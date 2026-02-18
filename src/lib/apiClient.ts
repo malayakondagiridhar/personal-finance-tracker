@@ -55,7 +55,13 @@ async function parseError(response: Response): Promise<ApiError> {
 }
 
 async function fetchWithToken(path: string, init?: RequestInit, forceRefresh = false): Promise<Response> {
-  const token = await auth.currentUser?.getIdToken(forceRefresh)
+  if (!auth.currentUser && typeof auth.authStateReady === 'function') {
+    await auth.authStateReady()
+  }
+
+  const token = auth.currentUser
+    ? await auth.currentUser.getIdToken(forceRefresh)
+    : undefined
 
   return fetch(`${API_BASE_URL}${path}`, {
     ...init,
