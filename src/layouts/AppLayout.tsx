@@ -1,8 +1,20 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth'
 
 export default function AppLayout() {
   const { user, logout } = useFirebaseAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const onUnauthorized = async () => {
+      await logout()
+      navigate('/auth', { replace: true })
+    }
+
+    window.addEventListener('pft:unauthorized', onUnauthorized)
+    return () => window.removeEventListener('pft:unauthorized', onUnauthorized)
+  }, [logout, navigate])
 
   return (
     <div className="min-h-screen bg-gray-100">
