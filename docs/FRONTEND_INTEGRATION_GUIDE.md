@@ -2,6 +2,10 @@
 
 ## Base URL
 - All endpoints are versioned under `/api/v1`.
+- Frontend environment wiring:
+  - `VITE_API_BASE_URL` (recommended in staging/prod)
+  - `VITE_API_VERSION_PREFIX` (default `/api/v1`)
+- Dev fallback when `VITE_API_BASE_URL` is not set: `http://localhost:8080/api/v1`
 
 ## Authentication
 Required for all finance endpoints:

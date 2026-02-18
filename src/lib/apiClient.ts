@@ -1,6 +1,22 @@
 import { auth } from './firebase'
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? '/api/v1'
+const API_VERSION_PREFIX = import.meta.env.VITE_API_VERSION_PREFIX || '/api/v1'
+
+function resolveApiBaseUrl() {
+  const configured = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim()
+
+  if (configured) {
+    return configured.replace(/\/$/, '')
+  }
+
+  if (import.meta.env.DEV) {
+    return `http://localhost:8080${API_VERSION_PREFIX}`
+  }
+
+  return API_VERSION_PREFIX
+}
+
+const API_BASE_URL = resolveApiBaseUrl()
 
 interface ApiErrorPayload {
   title?: string
