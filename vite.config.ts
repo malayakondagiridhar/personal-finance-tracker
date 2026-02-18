@@ -3,7 +3,8 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const proxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:5256'
+  // Default to HTTPS backend endpoint to avoid 307 redirects that can drop Authorization headers.
+  const proxyTarget = env.VITE_API_PROXY_TARGET || 'https://localhost:7121'
   const apiPrefix = env.VITE_API_VERSION_PREFIX || '/api/v1'
 
   return {
