@@ -32,6 +32,9 @@ public sealed class TransactionConfiguration : IEntityTypeConfiguration<Transact
         builder.Property(x => x.UpdatedAtUtc)
             .IsRequired();
 
+        builder.Property(x => x.RowVersion)
+            .IsRowVersion();
+
         builder.HasOne(x => x.User)
             .WithMany(x => x.Transactions)
             .HasForeignKey(x => x.UserId)
