@@ -69,5 +69,48 @@ public sealed class SummaryApiTests : IClassFixture<PersonalFinanceApiFactory>
         Assert.Equal("Food", summary.CategoryBreakdown[0].CategoryName);
         Assert.Equal(1200m, summary.CategoryBreakdown[0].Amount);
     }
+
+    [Fact]
+    public async Task GetMonthlySummary_ShouldExcludeOtherUsersTransactions()
+    {
+        var userA = Guid.NewGuid();
+        var userB = Guid.NewGuid();
+
+        var clientA = AuthenticatedClientFactory.Create(_factory, userA);
+        var clientB = AuthenticatedClientFactory.Create(_factory, userB);
+
+        var now = DateTime.UtcNow;
+
+        var categoryAResponse = await clientA.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Food", null, false));
+        var categoryBResponse = await clientB.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Food", null, false));
+
+        var categoryA = await categoryAResponse.Content.ReadFromJsonAsync<CategoryDto>();
+        var categoryB = await categoryBResponse.Content.ReadFromJsonAsync<CategoryDto>();
+
+        Assert.NotNull(categoryA);
+        Assert.NotNull(categoryB);
+
+        await clientA.PostAsJsonAsync("/api/v1/transactions", new CreateTransactionRequest(
+            categoryA!.Id,
+            100m,
+            TransactionType.Expense,
+            new DateTime(now.Year, now.Month, 3, 0, 0, 0, DateTimeKind.Utc),
+            "userA expense"));
+
+        await clientB.PostAsJsonAsync("/api/v1/transactions", new CreateTransactionRequest(
+            categoryB!.Id,
+            999m,
+            TransactionType.Expense,
+            new DateTime(now.Year, now.Month, 4, 0, 0, 0, DateTimeKind.Utc),
+            "userB expense"));
+
+        var summaryResponse = await clientA.GetAsync($"/api/v1/summary/monthly?year={now.Year}&month={now.Month}");
+        Assert.Equal(HttpStatusCode.OK, summaryResponse.StatusCode);
+
+        var summary = await summaryResponse.Content.ReadFromJsonAsync<MonthlySummaryDto>();
+        Assert.NotNull(summary);
+        Assert.Equal(100m, summary!.TotalExpense);
+        Assert.DoesNotContain(summary.CategoryBreakdown, x => x.Amount == 999m);
+    }
 }
 

@@ -74,6 +74,27 @@ public sealed class CategoriesApiTests : IClassFixture<PersonalFinanceApiFactory
         Assert.Equal("Gamma", categories.Items[0].Name);
         Assert.Equal("Beta", categories.Items[1].Name);
     }
+
+    [Fact]
+    public async Task GetAll_ShouldNotLeakOtherUsersCategories()
+    {
+        var userA = Guid.NewGuid();
+        var userB = Guid.NewGuid();
+
+        var clientA = AuthenticatedClientFactory.Create(_factory, userA);
+        var clientB = AuthenticatedClientFactory.Create(_factory, userB);
+
+        await clientA.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("A-Only", null, false));
+        await clientB.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("B-Only", null, false));
+
+        var response = await clientA.GetAsync("/api/v1/categories?page=1&pageSize=50");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var categories = await response.Content.ReadFromJsonAsync<PagedResult<CategoryDto>>();
+        Assert.NotNull(categories);
+        Assert.All(categories!.Items, x => Assert.Equal(userA, x.UserId));
+        Assert.DoesNotContain(categories.Items, x => x.Name == "B-Only");
+    }
 }
 
 
