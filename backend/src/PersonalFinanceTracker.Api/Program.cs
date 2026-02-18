@@ -28,6 +28,8 @@ builder.Services.AddApiVersioning(options =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
+builder.Services.AddHealthChecks();
+
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -218,6 +220,8 @@ app.UseUserProfileSync();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/ready");
 
 app.Run();
 
