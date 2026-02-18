@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Skeleton } from '../components/feedback/Skeleton'
+import { useToast } from '../components/feedback/ToastProvider'
 import { createBudget, getBudgetStatus } from '../services/budgetsApi'
 import { listCategories } from '../services/categoriesApi'
 import type { BudgetStatusDto, CategoryDto } from '../types/api'
@@ -19,6 +20,7 @@ export default function BudgetsPage() {
 
   const [form, setForm] = useState({ categoryId: '', limitAmount: 0 })
   const [editingBudget, setEditingBudget] = useState<BudgetStatusDto | null>(null)
+  const { notify } = useToast()
 
   const load = async () => {
     setLoading(true)
@@ -53,9 +55,12 @@ export default function BudgetsPage() {
       })
       setForm({ categoryId: '', limitAmount: 0 })
       setEditingBudget(null)
+      notify('Budget saved', 'success')
       await load()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save budget')
+      const message = err instanceof Error ? err.message : 'Failed to save budget'
+      setError(message)
+      notify(message, 'error')
     }
   }
 

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Skeleton } from '../components/feedback/Skeleton'
+import { useToast } from '../components/feedback/ToastProvider'
 import { useTransactionsApi } from '../hooks/useTransactionsApi'
 import { updateTransaction, type TransactionQueryParams } from '../services/transactionsApi'
 import type { CreateTransactionRequest, TransactionDto, TransactionType } from '../types/api'
@@ -16,6 +17,7 @@ interface FilterState {
 
 export default function TransactionsPage() {
   const { transactions, categories, loading, error, addTransaction, removeTransaction, reload } = useTransactionsApi()
+  const { notify } = useToast()
 
   const [form, setForm] = useState<CreateTransactionRequest>({
     categoryId: '',
@@ -48,23 +50,33 @@ export default function TransactionsPage() {
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault()
     if (!canSubmit) return
-    await addTransaction(form)
-    setForm(prev => ({ ...prev, amount: 0, note: '' }))
-    await applyFilters()
+    try {
+      await addTransaction(form)
+      notify('Transaction added', 'success')
+      setForm(prev => ({ ...prev, amount: 0, note: '' }))
+      await applyFilters()
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Failed to add transaction', 'error')
+    }
   }
 
   const onSaveEdit = async (event: FormEvent) => {
     event.preventDefault()
     if (!editing) return
-    await updateTransaction(editing.id, {
-      categoryId: editing.categoryId,
-      amount: editing.amount,
-      type: editing.type,
-      transactionDateUtc: editing.transactionDateUtc,
-      note: editing.note ?? '',
-    })
-    setEditing(null)
-    await applyFilters()
+    try {
+      await updateTransaction(editing.id, {
+        categoryId: editing.categoryId,
+        amount: editing.amount,
+        type: editing.type,
+        transactionDateUtc: editing.transactionDateUtc,
+        note: editing.note ?? '',
+      })
+      setEditing(null)
+      notify('Transaction updated', 'success')
+      await applyFilters()
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Failed to update transaction', 'error')
+    }
   }
 
   return (
@@ -138,7 +150,10 @@ export default function TransactionsPage() {
                   </td>
                   <td className="text-right">
                     <button onClick={() => setEditing(transaction)} className="mr-3 text-blue-600 hover:text-blue-800">Edit</button>
-                    <button onClick={() => void removeTransaction(transaction.id)} className="text-red-600 hover:text-red-800">Delete</button>
+                    <button onClick={async () => {
+                      await removeTransaction(transaction.id)
+                      notify('Transaction deleted', 'success')
+                    }} className="text-red-600 hover:text-red-800">Delete</button>
                   </td>
                 </tr>
               ))}
