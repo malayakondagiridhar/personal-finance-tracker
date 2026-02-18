@@ -61,7 +61,7 @@ User scoping:
 
 - Frontend sign-out ends local Firebase session on client.
 - Backend remains stateless and does not keep server-side session state.
-- See `docs/SIGNOUT_AND_TOKEN_INVALIDATION.md` for precise sign-out and post-sign-out behavior.
+- See `docs/SIGNOUT_AND_TOKEN_INVALIDATION.md` for precise sign-out, stale-token handling, and invalidation model.
 
 ## 6) Operational requirements
 
