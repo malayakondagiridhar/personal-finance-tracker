@@ -71,11 +71,11 @@ export default function BudgetsPage() {
     <div className="space-y-4">
       <section className="rounded-lg bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-800">{editingBudget ? `Edit budget • ${activeLabel}` : 'Add budget'}</h2>
-        <form onSubmit={onSubmit} className="grid gap-3 md:grid-cols-4">
+        <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <select value={editingBudget?.categoryId ?? form.categoryId} onChange={e => {
             setEditingBudget(null)
             setForm(prev => ({ ...prev, categoryId: e.target.value }))
-          }} className="rounded border px-3 py-2 md:col-span-2" required>
+          }} className="rounded border px-3 py-2 lg:col-span-2" required>
             <option value="">Select category</option>
             {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
           </select>

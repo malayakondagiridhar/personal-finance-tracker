@@ -83,8 +83,8 @@ export default function TransactionsPage() {
     <div className="space-y-4">
       <section className="rounded-lg bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-800">Add transaction</h2>
-        <form onSubmit={onSubmit} className="grid gap-3 md:grid-cols-5">
-          <select value={form.categoryId} onChange={e => setForm(prev => ({ ...prev, categoryId: e.target.value }))} className="rounded border px-3 py-2 md:col-span-2" required>
+        <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <select value={form.categoryId} onChange={e => setForm(prev => ({ ...prev, categoryId: e.target.value }))} className="rounded border px-3 py-2 lg:col-span-2" required>
             <option value="">Select category</option>
             {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
           </select>
@@ -94,7 +94,7 @@ export default function TransactionsPage() {
             <option value={1}>Expense</option>
           </select>
           <input type="date" value={form.transactionDateUtc.slice(0, 10)} onChange={e => setForm(prev => ({ ...prev, transactionDateUtc: new Date(`${e.target.value}T00:00:00.000Z`).toISOString() }))} className="rounded border px-3 py-2" required />
-          <input value={form.note ?? ''} onChange={e => setForm(prev => ({ ...prev, note: e.target.value }))} placeholder="Note" className="rounded border px-3 py-2 md:col-span-4" />
+          <input value={form.note ?? ''} onChange={e => setForm(prev => ({ ...prev, note: e.target.value }))} placeholder="Note" className="rounded border px-3 py-2 lg:col-span-4" />
           <button type="submit" disabled={!canSubmit} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">Add</button>
         </form>
       </section>
@@ -102,7 +102,7 @@ export default function TransactionsPage() {
       <section className="rounded-lg bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-800">Transactions</h2>
 
-        <div className="mb-4 grid gap-3 md:grid-cols-5">
+        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <select value={filters.categoryId} onChange={e => setFilters(prev => ({ ...prev, categoryId: e.target.value }))} className="rounded border px-3 py-2">
             <option value="">All categories</option>
             {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
