@@ -5,7 +5,10 @@
 - Frontend environment wiring:
   - `VITE_API_BASE_URL` (recommended in staging/prod)
   - `VITE_API_VERSION_PREFIX` (default `/api/v1`)
-- Dev fallback when `VITE_API_BASE_URL` is not set: `http://localhost:8080/api/v1`
+  - `VITE_API_PROXY_TARGET` (dev-only Vite proxy target, default `http://localhost:5256`)
+- Dev default behavior when `VITE_API_BASE_URL` is not set:
+  - frontend calls relative `/api/v1/...`
+  - Vite proxies `/api/v1` to `VITE_API_PROXY_TARGET`
 
 ## Authentication
 Required for all finance endpoints:

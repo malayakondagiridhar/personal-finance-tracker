@@ -9,10 +9,8 @@ function resolveApiBaseUrl() {
     return configured.replace(/\/$/, '')
   }
 
-  if (import.meta.env.DEV) {
-    return `http://localhost:8080${API_VERSION_PREFIX}`
-  }
-
+  // In dev, default to relative API path so Vite proxy handles backend routing.
+  // This avoids accidental calls to the frontend origin that return index.html.
   return API_VERSION_PREFIX
 }
 
@@ -38,6 +36,15 @@ export class ApiError extends Error {
 
 async function parseError(response: Response): Promise<ApiError> {
   const fallback = `Request failed with status ${response.status}`
+
+  const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
+
+  if (!contentType.includes('application/json')) {
+    return new ApiError(
+      'Received non-JSON response from API. Verify frontend API base URL / Vite proxy target.',
+      response.status,
+    )
+  }
 
   try {
     const payload = (await response.json()) as ApiErrorPayload
