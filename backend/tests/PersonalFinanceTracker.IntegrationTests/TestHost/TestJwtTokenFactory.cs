@@ -7,7 +7,11 @@ namespace PersonalFinanceTracker.IntegrationTests.TestHost;
 
 public static class TestJwtTokenFactory
 {
-    public static string Create(Guid userId, bool includeScope = true)
+    public static string Create(
+        Guid userId,
+        bool includeScope = true,
+        DateTime? expiresAtUtc = null,
+        DateTime? notBeforeUtc = null)
     {
         var claims = new List<Claim>
         {
@@ -29,8 +33,8 @@ public static class TestJwtTokenFactory
             issuer: TestAuthDefaults.Issuer,
             audience: TestAuthDefaults.Audience,
             claims: claims,
-            notBefore: DateTime.UtcNow.AddMinutes(-1),
-            expires: DateTime.UtcNow.AddHours(1),
+            notBefore: notBeforeUtc ?? DateTime.UtcNow.AddMinutes(-1),
+            expires: expiresAtUtc ?? DateTime.UtcNow.AddHours(1),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

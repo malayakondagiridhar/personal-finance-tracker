@@ -10,6 +10,10 @@ Required for all finance endpoints:
 
 User context is derived from token claims and not accepted from body/query for protected operations.
 
+Session refresh requirement:
+- On `401` with header `x-token-expired: true`, refresh token using Firebase SDK (`getIdToken(true)`) and retry once.
+- Do not keep custom refresh tokens in app storage.
+
 ## CORS
 Configured via:
 - `Cors:AllowedOrigins` in appsettings / environment variables.

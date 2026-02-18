@@ -27,3 +27,7 @@ Set in `.env` (or equivalent secure local env file):
 2. Implement Google sign-in/sign-out UI flow.
 3. Attach Firebase ID token to API calls.
 4. Configure backend to validate Firebase-issued JWT tokens.
+5. Implement token refresh retry flow (`getIdToken(true)` on 401 expired response).
+
+## Session/refresh reference
+See `docs/AUTH_SESSION_STRATEGY.md` for backend expectations and 401 retry contract.

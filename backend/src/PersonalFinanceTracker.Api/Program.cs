@@ -58,6 +58,38 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                if (context.Exception is SecurityTokenExpiredException)
+                {
+                    context.Response.Headers.Append("x-token-expired", "true");
+                }
+
+                return Task.CompletedTask;
+            },
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+
+                var detail = context.AuthenticateFailure is SecurityTokenExpiredException
+                    ? "Bearer token expired. Refresh Firebase ID token and retry."
+                    : "A valid bearer token is required.";
+
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    title = "Unauthorized",
+                    status = StatusCodes.Status401Unauthorized,
+                    detail,
+                    traceId = context.HttpContext.TraceIdentifier
+                });
+            }
+        };
+
         var firebaseProjectId = builder.Configuration["Auth:FirebaseProjectId"];
 
         if (!string.IsNullOrWhiteSpace(firebaseProjectId))
