@@ -2,8 +2,11 @@
 
 ## Local Development
 - `ASPNETCORE_ENVIRONMENT=Development`
-- `DatabaseProvider=SqlServer`
-- `ConnectionStrings__DefaultConnection` points to local SQL Server.
+- Default in repo: `DatabaseProvider=InMemory` (no local SQL dependency)
+- Default in repo: `InMemoryDatabaseName=PersonalFinanceTrackerDev`
+- Optional SQL mode:
+  - set `DatabaseProvider=SqlServer`
+  - set `ConnectionStrings__DefaultConnection` to reachable SQL Server
 - `Cors__AllowedOrigins=http://localhost:5173`
 - Frontend Firebase vars required:
   - `VITE_FIREBASE_API_KEY`
@@ -12,6 +15,10 @@
   - `VITE_FIREBASE_APP_ID`
 - Backend Firebase validation target:
   - `Auth__FirebaseProjectId`
+
+Troubleshooting note (401 + SQL connection errors):
+- If backend cannot connect to SQL, authenticated request pipeline can fail while syncing user profile.
+- Use default dev InMemory mode first, then switch to SQL mode only after DB connectivity is verified.
 
 ## Test (Integration)
 - `DatabaseProvider=InMemory` (current integration default)
