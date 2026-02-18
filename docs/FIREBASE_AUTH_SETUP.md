@@ -22,6 +22,10 @@ Set in `.env` (or equivalent secure local env file):
 - Never commit service-account private keys.
 - Restrict authorized domains in Firebase console for production.
 
+## Mandatory domain restrictions
+Authorized domains must be explicitly configured for each production/staging frontend hostname.
+See `docs/FIREBASE_AUTHORIZED_DOMAINS.md` and treat it as release-gating checklist.
+
 ## Next implementation steps
 1. Add Firebase SDK initialization in frontend.
 2. Implement Google sign-in/sign-out UI flow.
