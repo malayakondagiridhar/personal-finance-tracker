@@ -6,6 +6,10 @@
 ## Authentication
 All finance endpoints require a bearer token.
 
+Reference:
+- End-to-end auth contract: `docs/AUTH_E2E_CONTRACT.md`
+- Session refresh contract: `docs/AUTH_SESSION_STRATEGY.md`
+
 Required:
 - Header: `Authorization: Bearer <jwt>`
 - Claim: `scope=finance-api`

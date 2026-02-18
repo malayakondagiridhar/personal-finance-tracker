@@ -14,6 +14,11 @@ Session refresh requirement:
 - On `401` with header `x-token-expired: true`, refresh token using Firebase SDK (`getIdToken(true)`) and retry once.
 - Do not keep custom refresh tokens in app storage.
 
+Sign-out contract:
+- Call Firebase `signOut(auth)` and clear client auth state.
+- Do not send cached bearer tokens after sign-out.
+- Reference: `docs/SIGNOUT_AND_TOKEN_INVALIDATION.md`
+
 ## CORS
 Configured via:
 - `Cors:AllowedOrigins` in appsettings / environment variables.
