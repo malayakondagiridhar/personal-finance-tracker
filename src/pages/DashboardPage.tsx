@@ -29,7 +29,7 @@ export default function DashboardPage() {
         const [summaryData, budgetData, transactionData] = await Promise.all([
           getMonthlySummary(now.getUTCFullYear(), now.getUTCMonth() + 1),
           getBudgetStatus(now.getUTCFullYear(), now.getUTCMonth() + 1),
-          getTransactions({ page: 1, pageSize: 120, sortDirection: 'desc' }),
+          getTransactions({ page: 1, pageSize: 100, sortDirection: 'desc' }),
         ])
 
         setSummary(summaryData)
