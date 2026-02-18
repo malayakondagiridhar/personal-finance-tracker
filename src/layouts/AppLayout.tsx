@@ -7,7 +7,12 @@ export default function AppLayout() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const onUnauthorized = async () => {
+    const onUnauthorized = async (event: Event) => {
+      const customEvent = event as CustomEvent<{ reason?: string }>
+      if (customEvent.detail?.reason !== 'expired-token') {
+        return
+      }
+
       await logout()
       navigate('/auth', { replace: true })
     }
