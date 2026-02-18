@@ -26,6 +26,11 @@ public sealed class TransactionConfiguration : IEntityTypeConfiguration<Transact
         builder.Property(x => x.Note)
             .HasMaxLength(500);
 
+        builder.Property(x => x.IsDeleted)
+            .IsRequired();
+
+        builder.Property(x => x.DeletedAtUtc);
+
         builder.Property(x => x.CreatedAtUtc)
             .IsRequired();
 
@@ -47,5 +52,7 @@ public sealed class TransactionConfiguration : IEntityTypeConfiguration<Transact
 
         builder.HasIndex(x => new { x.UserId, x.TransactionDateUtc });
         builder.HasIndex(x => x.CategoryId);
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

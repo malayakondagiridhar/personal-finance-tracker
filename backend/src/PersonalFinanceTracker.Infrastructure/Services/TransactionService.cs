@@ -120,7 +120,10 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
             .FirstOrDefaultAsync(x => x.Id == transactionId && x.UserId == userId, cancellationToken)
             ?? throw new NotFoundException($"Transaction '{transactionId}' was not found.");
 
-        dbContext.Transactions.Remove(transaction);
+        transaction.IsDeleted = true;
+        transaction.DeletedAtUtc = DateTime.UtcNow;
+        transaction.UpdatedAtUtc = DateTime.UtcNow;
+
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 

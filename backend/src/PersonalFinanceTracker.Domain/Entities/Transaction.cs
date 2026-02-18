@@ -11,6 +11,8 @@ public sealed class Transaction : BaseEntity
     public TransactionType Type { get; set; }
     public DateTime TransactionDateUtc { get; set; }
     public string? Note { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAtUtc { get; set; }
 
     public User? User { get; set; }
     public Category? Category { get; set; }
