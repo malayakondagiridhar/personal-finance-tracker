@@ -4,6 +4,7 @@ import { Skeleton } from '../components/feedback/Skeleton'
 import { useToast } from '../components/feedback/ToastProvider'
 import { useTransactionsApi } from '../hooks/useTransactionsApi'
 import { toUserMessage } from '../lib/apiErrorHandling'
+import { createCategory } from '../services/categoriesApi'
 import { updateTransaction, type TransactionQueryParams } from '../services/transactionsApi'
 import type { CreateTransactionRequest, TransactionDto, TransactionType } from '../types/api'
 
@@ -34,6 +35,7 @@ export default function TransactionsPage() {
     sortDirection: 'desc',
   })
   const [editing, setEditing] = useState<TransactionDto | null>(null)
+  const [newCategoryName, setNewCategoryName] = useState('')
 
   const canSubmit = useMemo(() => Boolean(form.categoryId && form.amount > 0 && form.transactionDateUtc), [form])
 
@@ -80,10 +82,43 @@ export default function TransactionsPage() {
     }
   }
 
+  const onCreateCategory = async () => {
+    const name = newCategoryName.trim()
+    if (!name) return
+
+    try {
+      const created = await createCategory({
+        name,
+        description: null,
+        isDefault: false,
+      })
+
+      notify('Category created', 'success')
+      setNewCategoryName('')
+      await reload()
+      setForm(prev => ({ ...prev, categoryId: created.id }))
+    } catch (err) {
+      notify(toUserMessage(err, 'Failed to create category'), 'error')
+    }
+  }
+
   return (
     <div className="space-y-4">
       <section className="rounded-lg bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-800">Add transaction</h2>
+
+        <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+          <input
+            value={newCategoryName}
+            onChange={e => setNewCategoryName(e.target.value)}
+            placeholder="Quick add category (e.g. Food)"
+            className="rounded border px-3 py-2"
+          />
+          <button type="button" onClick={() => void onCreateCategory()} className="rounded border border-blue-600 px-3 py-2 text-blue-700 hover:bg-blue-50">
+            Add category
+          </button>
+        </div>
+
         <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <select value={form.categoryId} onChange={e => setForm(prev => ({ ...prev, categoryId: e.target.value }))} className="rounded border px-3 py-2 lg:col-span-2" required>
             <option value="">Select category</option>

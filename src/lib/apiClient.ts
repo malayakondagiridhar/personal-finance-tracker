@@ -90,5 +90,13 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     return undefined as T
   }
 
+  const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
+  if (!contentType.includes('application/json')) {
+    throw new ApiError(
+      'Received non-JSON response from API. Verify frontend API base URL / Vite proxy target.',
+      response.status,
+    )
+  }
+
   return response.json() as Promise<T>
 }

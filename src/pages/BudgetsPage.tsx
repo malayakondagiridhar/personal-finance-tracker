@@ -4,7 +4,7 @@ import { Skeleton } from '../components/feedback/Skeleton'
 import { useToast } from '../components/feedback/ToastProvider'
 import { toUserMessage } from '../lib/apiErrorHandling'
 import { createBudget, getBudgetStatus } from '../services/budgetsApi'
-import { listCategories } from '../services/categoriesApi'
+import { createCategory, listCategories } from '../services/categoriesApi'
 import type { BudgetStatusDto, CategoryDto } from '../types/api'
 
 const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })
@@ -21,6 +21,7 @@ export default function BudgetsPage() {
 
   const [form, setForm] = useState({ categoryId: '', limitAmount: 0 })
   const [editingBudget, setEditingBudget] = useState<BudgetStatusDto | null>(null)
+  const [newCategoryName, setNewCategoryName] = useState('')
   const { notify } = useToast()
 
   const load = async () => {
@@ -65,6 +66,27 @@ export default function BudgetsPage() {
     }
   }
 
+  const onCreateCategory = async () => {
+    const name = newCategoryName.trim()
+    if (!name) return
+
+    try {
+      const created = await createCategory({
+        name,
+        description: null,
+        isDefault: false,
+      })
+      notify('Category created', 'success')
+      setNewCategoryName('')
+      await load()
+      setForm(prev => ({ ...prev, categoryId: created.id }))
+    } catch (err) {
+      const message = toUserMessage(err, 'Failed to create category')
+      setError(message)
+      notify(message, 'error')
+    }
+  }
+
   const activeCategoryId = editingBudget?.categoryId ?? form.categoryId
   const activeLabel = useMemo(() => categories.find(c => c.id === activeCategoryId)?.name ?? '', [activeCategoryId, categories])
 
@@ -72,6 +94,19 @@ export default function BudgetsPage() {
     <div className="space-y-4">
       <section className="rounded-lg bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-800">{editingBudget ? `Edit budget • ${activeLabel}` : 'Add budget'}</h2>
+
+        <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+          <input
+            value={newCategoryName}
+            onChange={e => setNewCategoryName(e.target.value)}
+            placeholder="Quick add category (e.g. Rent)"
+            className="rounded border px-3 py-2"
+          />
+          <button type="button" onClick={() => void onCreateCategory()} className="rounded border border-blue-600 px-3 py-2 text-blue-700 hover:bg-blue-50">
+            Add category
+          </button>
+        </div>
+
         <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <select value={editingBudget?.categoryId ?? form.categoryId} onChange={e => {
             setEditingBudget(null)
