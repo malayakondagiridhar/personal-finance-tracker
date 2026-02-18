@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { CardSkeleton, Skeleton } from '../components/feedback/Skeleton'
 import { getBudgetStatus } from '../services/budgetsApi'
 import { getMonthlySummary } from '../services/summaryApi'
 import { getTransactions } from '../services/transactionsApi'
@@ -65,7 +66,14 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      {loading && <p className="text-sm text-gray-500">Loading dashboard...</p>}
+      {loading && (
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </section>
+      )}
       {error && <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -78,7 +86,7 @@ export default function DashboardPage() {
       <section className="grid gap-4 lg:grid-cols-2">
         <article className="rounded-lg bg-white p-4 shadow-sm">
           <h3 className="mb-3 text-base font-semibold text-gray-800">Monthly trends</h3>
-          {!trendData.length ? <p className="text-sm text-gray-500">Not enough data to render trends.</p> : (
+          {loading ? <div className="space-y-2"><Skeleton className="h-3 w-full" /><Skeleton className="h-3 w-4/5" /><Skeleton className="h-3 w-3/5" /></div> : !trendData.length ? <p className="text-sm text-gray-500">Not enough data to render trends.</p> : (
             <div className="space-y-3">
               {trendData.map(point => (
                 <div key={point.label}>

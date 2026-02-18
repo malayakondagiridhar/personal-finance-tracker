@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Skeleton } from '../components/feedback/Skeleton'
 import { createBudget, getBudgetStatus } from '../services/budgetsApi'
 import { listCategories } from '../services/categoriesApi'
 import type { BudgetStatusDto, CategoryDto } from '../types/api'
@@ -87,7 +88,7 @@ export default function BudgetsPage() {
         )}
       </section>
 
-      {loading && <p className="text-sm text-gray-500">Loading budgets...</p>}
+      {loading && <div className="grid gap-2 sm:grid-cols-2"><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /></div>}
       {error && <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

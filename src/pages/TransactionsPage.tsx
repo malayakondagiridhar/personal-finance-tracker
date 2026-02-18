@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Skeleton } from '../components/feedback/Skeleton'
 import { useTransactionsApi } from '../hooks/useTransactionsApi'
 import { updateTransaction, type TransactionQueryParams } from '../services/transactionsApi'
 import type { CreateTransactionRequest, TransactionDto, TransactionType } from '../types/api'
@@ -111,7 +112,7 @@ export default function TransactionsPage() {
           <button onClick={() => void applyFilters()} className="rounded bg-gray-800 px-4 py-2 text-white hover:bg-black">Apply</button>
         </div>
 
-        {loading && <p className="text-sm text-gray-500">Loading transactions...</p>}
+        {loading && <div className="space-y-2"><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /></div>}
         {error && <p className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-600">{error}</p>}
         {!loading && !transactions.length && <p className="text-sm text-gray-500">No transactions found.</p>}
 
