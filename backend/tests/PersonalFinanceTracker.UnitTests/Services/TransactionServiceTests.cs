@@ -18,7 +18,11 @@ public sealed class TransactionServiceTests
             DateTime.UtcNow,
             DateTime.UtcNow.AddDays(-1),
             null,
-            null);
+            null,
+            1,
+            20,
+            "transactionDateUtc",
+            "desc");
 
         await Assert.ThrowsAsync<ValidationException>(() => service.GetAsync(query));
     }

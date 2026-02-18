@@ -42,12 +42,40 @@ public sealed class CategoryService(AppDbContext dbContext) : ICategoryService
         return new CategoryDto(category.Id, category.UserId, category.Name, category.Description, category.IsDefault);
     }
 
-    public async Task<IReadOnlyList<CategoryDto>> GetAllAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<CategoryDto>> GetAllAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        string? sortBy,
+        string? sortDirection,
+        CancellationToken cancellationToken = default)
     {
-        return await dbContext.Categories
+        if (page < 1)
+        {
+            throw new ValidationException("page must be greater than or equal to 1.");
+        }
+
+        if (pageSize is < 1 or > 100)
+        {
+            throw new ValidationException("pageSize must be between 1 and 100.");
+        }
+
+        var normalizedSortBy = (sortBy ?? "name").Trim().ToLowerInvariant();
+        var descending = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+
+        var query = dbContext.Categories
             .AsNoTracking()
-            .Where(x => x.UserId == userId)
-            .OrderBy(x => x.Name)
+            .Where(x => x.UserId == userId);
+
+        query = normalizedSortBy switch
+        {
+            "createdatutc" => descending ? query.OrderByDescending(x => x.CreatedAtUtc) : query.OrderBy(x => x.CreatedAtUtc),
+            _ => descending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name)
+        };
+
+        return await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(x => new CategoryDto(x.Id, x.UserId, x.Name, x.Description, x.IsDefault))
             .ToListAsync(cancellationToken);
     }

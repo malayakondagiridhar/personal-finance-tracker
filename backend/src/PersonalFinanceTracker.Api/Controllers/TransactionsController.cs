@@ -30,10 +30,14 @@ public sealed class TransactionsController(ITransactionService transactionServic
         [FromQuery] DateTime? toDateUtc,
         [FromQuery] Guid? categoryId,
         [FromQuery] TransactionType? type,
-        CancellationToken cancellationToken)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? sortBy = "transactionDateUtc",
+        [FromQuery] string? sortDirection = "desc",
+        CancellationToken cancellationToken = default)
     {
         var userId = User.GetRequiredUserId();
-        var query = new TransactionQuery(userId, fromDateUtc, toDateUtc, categoryId, type);
+        var query = new TransactionQuery(userId, fromDateUtc, toDateUtc, categoryId, type, page, pageSize, sortBy, sortDirection);
         var data = await transactionService.GetAsync(query, cancellationToken);
         return Ok(data);
     }

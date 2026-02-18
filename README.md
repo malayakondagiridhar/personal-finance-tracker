@@ -125,9 +125,9 @@ Layer intent:
 > Base path: `/api/v1`
 
 - `POST /api/v1/categories`
-- `GET /api/v1/categories`
+- `GET /api/v1/categories?page=1&pageSize=20&sortBy=name&sortDirection=asc`
 - `POST /api/v1/transactions`
-- `GET /api/v1/transactions?fromDateUtc=&toDateUtc=&categoryId=&type=`
+- `GET /api/v1/transactions?fromDateUtc=&toDateUtc=&categoryId=&type=&page=1&pageSize=20&sortBy=transactionDateUtc&sortDirection=desc`
 - `PUT /api/v1/transactions/{transactionId}`
 - `DELETE /api/v1/transactions/{transactionId}`
 - `POST /api/v1/budgets`
@@ -141,6 +141,11 @@ All finance endpoints require:
 - JWT claim `scope=finance-api`
 
 User context is derived from token claims and is no longer accepted from query/body inputs on protected operations.
+
+### Rate limit baseline
+
+- Global baseline: 60 requests/minute per caller identity.
+- Exceeded requests return HTTP `429 Too Many Requests` with standard JSON error contract.
 
 ## Sample requests
 
