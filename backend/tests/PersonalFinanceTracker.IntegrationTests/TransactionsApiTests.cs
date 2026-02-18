@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using PersonalFinanceTracker.Application.Contracts.Categories;
+using PersonalFinanceTracker.Application.Contracts.Common;
 using PersonalFinanceTracker.Application.Contracts.Transactions;
 using PersonalFinanceTracker.Domain.Enums;
 using PersonalFinanceTracker.IntegrationTests.TestHost;
@@ -45,11 +46,11 @@ public sealed class TransactionsApiTests : IClassFixture<PersonalFinanceApiFacto
         var getResponse = await client.GetAsync($"/api/v1/transactions?fromDateUtc={Uri.EscapeDataString(fromDate)}&toDateUtc={Uri.EscapeDataString(toDate)}&type={(int)TransactionType.Expense}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
 
-        var transactions = await getResponse.Content.ReadFromJsonAsync<List<TransactionDto>>();
+        var transactions = await getResponse.Content.ReadFromJsonAsync<PagedResult<TransactionDto>>();
         Assert.NotNull(transactions);
-        Assert.Single(transactions!);
-        Assert.Equal(1200m, transactions[0].Amount);
-        Assert.Equal(userId, transactions[0].UserId);
+        Assert.Single(transactions!.Items);
+        Assert.Equal(1200m, transactions.Items[0].Amount);
+        Assert.Equal(userId, transactions.Items[0].UserId);
     }
 
     [Fact]
@@ -113,11 +114,11 @@ public sealed class TransactionsApiTests : IClassFixture<PersonalFinanceApiFacto
         var pagedResponse = await client.GetAsync("/api/v1/transactions?page=1&pageSize=2&sortBy=amount&sortDirection=desc");
         Assert.Equal(HttpStatusCode.OK, pagedResponse.StatusCode);
 
-        var paged = await pagedResponse.Content.ReadFromJsonAsync<List<TransactionDto>>();
+        var paged = await pagedResponse.Content.ReadFromJsonAsync<PagedResult<TransactionDto>>();
         Assert.NotNull(paged);
-        Assert.Equal(2, paged!.Count);
-        Assert.Equal(400m, paged[0].Amount);
-        Assert.Equal(250m, paged[1].Amount);
+        Assert.Equal(2, paged!.Items.Count);
+        Assert.Equal(400m, paged.Items[0].Amount);
+        Assert.Equal(250m, paged.Items[1].Amount);
 
         var invalidPageSizeResponse = await client.GetAsync("/api/v1/transactions?page=1&pageSize=101");
         Assert.Equal(HttpStatusCode.BadRequest, invalidPageSizeResponse.StatusCode);

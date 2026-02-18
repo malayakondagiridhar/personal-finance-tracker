@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Application.Abstractions.Services;
+using PersonalFinanceTracker.Application.Contracts.Common;
 using PersonalFinanceTracker.Application.Contracts.Transactions;
 using PersonalFinanceTracker.Application.Exceptions;
 using PersonalFinanceTracker.Domain.Entities;
@@ -31,7 +32,7 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
         return ToDto(transaction);
     }
 
-    public async Task<IReadOnlyList<TransactionDto>> GetAsync(TransactionQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<TransactionDto>> GetAsync(TransactionQuery query, CancellationToken cancellationToken = default)
     {
         if (query.FromDateUtc.HasValue && query.ToDateUtc.HasValue && query.FromDateUtc > query.ToDateUtc)
         {
@@ -82,11 +83,15 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
             _ => descending ? dataQuery.OrderByDescending(x => x.TransactionDateUtc) : dataQuery.OrderBy(x => x.TransactionDateUtc)
         };
 
-        return await sortedQuery
+        var totalCount = await dataQuery.CountAsync(cancellationToken);
+        var items = await sortedQuery
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
             .Select(x => ToDto(x))
             .ToListAsync(cancellationToken);
+
+        var totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)query.PageSize);
+        return new PagedResult<TransactionDto>(items, query.Page, query.PageSize, totalCount, totalPages);
     }
 
     public async Task<TransactionDto> UpdateAsync(Guid userId, Guid transactionId, UpdateTransactionRequest request, CancellationToken cancellationToken = default)
@@ -115,7 +120,10 @@ public sealed class TransactionService(AppDbContext dbContext) : ITransactionSer
             .FirstOrDefaultAsync(x => x.Id == transactionId && x.UserId == userId, cancellationToken)
             ?? throw new NotFoundException($"Transaction '{transactionId}' was not found.");
 
-        dbContext.Transactions.Remove(transaction);
+        transaction.IsDeleted = true;
+        transaction.DeletedAtUtc = DateTime.UtcNow;
+        transaction.UpdatedAtUtc = DateTime.UtcNow;
+
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 

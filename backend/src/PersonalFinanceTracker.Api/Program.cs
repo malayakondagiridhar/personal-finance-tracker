@@ -6,9 +6,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using PersonalFinanceTracker.Api.Middleware;
 using PersonalFinanceTracker.Infrastructure;
+using PersonalFinanceTracker.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +29,8 @@ builder.Services.AddApiVersioning(options =>
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+builder.Services.AddHealthChecks();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -53,6 +58,38 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                if (context.Exception is SecurityTokenExpiredException)
+                {
+                    context.Response.Headers.Append("x-token-expired", "true");
+                }
+
+                return Task.CompletedTask;
+            },
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+
+                var detail = context.AuthenticateFailure is SecurityTokenExpiredException
+                    ? "Bearer token expired. Refresh Firebase ID token and retry."
+                    : "A valid bearer token is required.";
+
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    title = "Unauthorized",
+                    status = StatusCodes.Status401Unauthorized,
+                    detail,
+                    traceId = context.HttpContext.TraceIdentifier
+                });
+            }
+        };
+
         var firebaseProjectId = builder.Configuration["Auth:FirebaseProjectId"];
 
         if (!string.IsNullOrWhiteSpace(firebaseProjectId))
@@ -163,15 +200,56 @@ builder.Services.AddRateLimiter(options =>
     };
 });
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Personal Finance Tracker API",
+        Version = "v1"
+    });
+
+    var bearerScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Enter a valid bearer token. Example: Bearer <token>",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Reference = new OpenApiReference
+        {
+            Type = ReferenceType.SecurityScheme,
+            Id = "Bearer"
+        }
+    };
+
+    options.AddSecurityDefinition("Bearer", bearerScheme);
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            bearerScheme,
+            []
+        }
+    });
+});
 
 var app = builder.Build();
+
+if (args.Contains("--seed-demo", StringComparer.OrdinalIgnoreCase))
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+    await DemoDataSeeder.SeedAsync(dbContext);
+    return;
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseGlobalExceptionHandling();
@@ -185,6 +263,8 @@ app.UseUserProfileSync();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/ready");
 
 app.Run();
 

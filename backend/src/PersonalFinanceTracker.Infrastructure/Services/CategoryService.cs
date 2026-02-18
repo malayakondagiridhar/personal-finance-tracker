@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Application.Abstractions.Services;
 using PersonalFinanceTracker.Application.Contracts.Categories;
+using PersonalFinanceTracker.Application.Contracts.Common;
 using PersonalFinanceTracker.Application.Exceptions;
 using PersonalFinanceTracker.Domain.Entities;
 using PersonalFinanceTracker.Infrastructure.Persistence;
@@ -42,7 +43,7 @@ public sealed class CategoryService(AppDbContext dbContext) : ICategoryService
         return new CategoryDto(category.Id, category.UserId, category.Name, category.Description, category.IsDefault);
     }
 
-    public async Task<IReadOnlyList<CategoryDto>> GetAllAsync(
+    public async Task<PagedResult<CategoryDto>> GetAllAsync(
         Guid userId,
         int page,
         int pageSize,
@@ -63,20 +64,25 @@ public sealed class CategoryService(AppDbContext dbContext) : ICategoryService
         var normalizedSortBy = (sortBy ?? "name").Trim().ToLowerInvariant();
         var descending = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
 
-        var query = dbContext.Categories
+        var baseQuery = dbContext.Categories
             .AsNoTracking()
             .Where(x => x.UserId == userId);
 
-        query = normalizedSortBy switch
+        var totalCount = await baseQuery.CountAsync(cancellationToken);
+
+        var query = normalizedSortBy switch
         {
-            "createdatutc" => descending ? query.OrderByDescending(x => x.CreatedAtUtc) : query.OrderBy(x => x.CreatedAtUtc),
-            _ => descending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name)
+            "createdatutc" => descending ? baseQuery.OrderByDescending(x => x.CreatedAtUtc) : baseQuery.OrderBy(x => x.CreatedAtUtc),
+            _ => descending ? baseQuery.OrderByDescending(x => x.Name) : baseQuery.OrderBy(x => x.Name)
         };
 
-        return await query
+        var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(x => new CategoryDto(x.Id, x.UserId, x.Name, x.Description, x.IsDefault))
             .ToListAsync(cancellationToken);
+
+        var totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
+        return new PagedResult<CategoryDto>(items, page, pageSize, totalCount, totalPages);
     }
 }

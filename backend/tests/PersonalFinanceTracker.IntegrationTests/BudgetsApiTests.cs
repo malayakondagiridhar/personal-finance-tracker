@@ -80,5 +80,52 @@ public sealed class BudgetsApiTests : IClassFixture<PersonalFinanceApiFactory>
         var payload = await secondResponse.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal(409, payload.GetProperty("status").GetInt32());
     }
+
+    [Fact]
+    public async Task GetBudgetStatus_ShouldExcludeOtherUsersBudgetsAndTransactions()
+    {
+        var userA = Guid.NewGuid();
+        var userB = Guid.NewGuid();
+
+        var clientA = AuthenticatedClientFactory.Create(_factory, userA);
+        var clientB = AuthenticatedClientFactory.Create(_factory, userB);
+
+        var categoryAResponse = await clientA.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Food", null, false));
+        var categoryBResponse = await clientB.PostAsJsonAsync("/api/v1/categories", new CreateCategoryRequest("Food", null, false));
+
+        var categoryA = await categoryAResponse.Content.ReadFromJsonAsync<CategoryDto>();
+        var categoryB = await categoryBResponse.Content.ReadFromJsonAsync<CategoryDto>();
+
+        Assert.NotNull(categoryA);
+        Assert.NotNull(categoryB);
+
+        var now = DateTime.UtcNow;
+
+        await clientA.PostAsJsonAsync("/api/v1/budgets", new CreateBudgetRequest(categoryA!.Id, now.Year, now.Month, 1000m));
+        await clientB.PostAsJsonAsync("/api/v1/budgets", new CreateBudgetRequest(categoryB!.Id, now.Year, now.Month, 10000m));
+
+        await clientA.PostAsJsonAsync("/api/v1/transactions", new CreateTransactionRequest(
+            categoryA.Id,
+            400m,
+            TransactionType.Expense,
+            new DateTime(now.Year, now.Month, 10, 0, 0, 0, DateTimeKind.Utc),
+            "userA food"));
+
+        await clientB.PostAsJsonAsync("/api/v1/transactions", new CreateTransactionRequest(
+            categoryB!.Id,
+            9000m,
+            TransactionType.Expense,
+            new DateTime(now.Year, now.Month, 11, 0, 0, 0, DateTimeKind.Utc),
+            "userB food"));
+
+        var statusResponse = await clientA.GetAsync($"/api/v1/budgets/status?year={now.Year}&month={now.Month}");
+        Assert.Equal(HttpStatusCode.OK, statusResponse.StatusCode);
+
+        var statuses = await statusResponse.Content.ReadFromJsonAsync<List<BudgetStatusDto>>();
+        Assert.NotNull(statuses);
+        Assert.Single(statuses!);
+        Assert.Equal(400m, statuses[0].SpentAmount);
+        Assert.Equal(600m, statuses[0].RemainingAmount);
+    }
 }
 

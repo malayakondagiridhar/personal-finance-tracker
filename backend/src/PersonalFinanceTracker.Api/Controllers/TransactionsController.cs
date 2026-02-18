@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonalFinanceTracker.Api.Auth;
 using PersonalFinanceTracker.Application.Abstractions.Services;
+using PersonalFinanceTracker.Application.Contracts.Common;
 using PersonalFinanceTracker.Application.Contracts.Transactions;
 using PersonalFinanceTracker.Domain.Enums;
 
@@ -24,7 +25,7 @@ public sealed class TransactionsController(ITransactionService transactionServic
     }
 
     [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<TransactionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResult<TransactionDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(
         [FromQuery] DateTime? fromDateUtc,
         [FromQuery] DateTime? toDateUtc,

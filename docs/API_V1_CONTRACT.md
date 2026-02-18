@@ -39,8 +39,13 @@ Error responses follow standardized payload:
 
 Mapped status behavior:
 - 400: validation errors / invalid request constraints
-- 401: missing/invalid authentication
+- 401: missing/invalid/expired authentication token
 - 403: authenticated but missing required scope/policy
 - 404: resource or related entity not found
 - 409: business conflict
 - 500: unhandled server error
+
+401 contract details:
+- JSON payload includes `title`, `status`, `detail`, `traceId`
+- For expired token flows, response includes `x-token-expired: true`
+- Client should refresh Firebase ID token and retry once
