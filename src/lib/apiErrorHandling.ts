@@ -3,7 +3,17 @@ import { ApiError } from './apiClient'
 export function toUserMessage(error: unknown, fallback: string) {
   if (error instanceof ApiError) {
     if (error.status === 409) {
-      return error.message || 'Conflict detected. Refresh and retry.'
+      const conflictMessage = error.message.toLowerCase()
+
+      if (conflictMessage.includes('budget') && conflictMessage.includes('already exists')) {
+        return 'A budget already exists for this category and month. Please edit the existing budget instead.'
+      }
+
+      if (conflictMessage.includes('category') && conflictMessage.includes('already exists')) {
+        return 'A category with the same name already exists.'
+      }
+
+      return 'Conflict detected. Please review existing data and retry.'
     }
 
     if (error.status === 429) {

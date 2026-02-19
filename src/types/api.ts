@@ -6,7 +6,7 @@ export interface PagedResult<T> {
   totalPages: number
 }
 
-export type TransactionType = 0 | 1
+export type TransactionType = 1 | 2
 
 export interface CategoryDto {
   id: string

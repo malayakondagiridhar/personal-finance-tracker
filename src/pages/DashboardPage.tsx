@@ -53,7 +53,7 @@ export default function DashboardPage() {
       const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
       const label = d.toLocaleString('en-IN', { month: 'short' })
       const existing = map.get(key) ?? { label, income: 0, expense: 0 }
-      if (tx.type === 0) existing.income += tx.amount
+      if (tx.type === 1) existing.income += tx.amount
       else existing.expense += tx.amount
       map.set(key, existing)
     })
@@ -130,8 +130,8 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium text-gray-700">{new Date(tx.transactionDateUtc).toLocaleDateString()}</p>
                   <p className="text-xs text-gray-500">{tx.note || 'No note'}</p>
                 </div>
-                <span className={tx.type === 0 ? 'text-sm font-semibold text-green-600' : 'text-sm font-semibold text-red-600'}>
-                  {tx.type === 0 ? '+' : '-'} {currency.format(tx.amount)}
+                <span className={tx.type === 1 ? 'text-sm font-semibold text-green-600' : 'text-sm font-semibold text-red-600'}>
+                  {tx.type === 1 ? '+' : '-'} {currency.format(tx.amount)}
                 </span>
               </div>
             ))}
