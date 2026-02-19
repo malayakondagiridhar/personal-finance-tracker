@@ -1,8 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Basic body styling */
 body {
-  @apply bg-gray-50 text-gray-800;
+  @apply bg-[#F0F4F8] text-slate-800;
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  @apply antialiased;
 }
